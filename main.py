@@ -14,11 +14,12 @@ class top(QMainWindow):
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.api = API()
-        self.get_exchange_info()
 
-    def get_exchange_info(self):
-        for symbol in self.api.info["symbols"]:
+        self.api = API("Binance")   # Create and instance that can communicate with an exchange
+        self.get_exchange_info(self.api)
+
+    def get_exchange_info(self, api):
+        for symbol in api.info["symbols"]:
             self.ui.pair_comboBox.addItem(symbol["symbol"])
 
 if __name__ == "__main__":
