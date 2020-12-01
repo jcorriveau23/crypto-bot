@@ -2,8 +2,8 @@
 
 you need in the root folder a Keys.py file with your binance api keys writin as:
 
-api_key = " your api public key "
-api_secret = " your api private key "
+api_key = "your api public key"
+api_secret = "your api private key"
 
 # Libraries
 
