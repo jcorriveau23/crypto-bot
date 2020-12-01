@@ -19,8 +19,12 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        #self.wallet = WalletFrontEnd()
-        WalletFrontEnd.add_crypto_display(self)
+        self.api = API("Binance")   # Create and instance that can communicate with an exchange
+        self.get_exchange_info(self.api)
+
+    def get_exchange_info(self, api):
+        for symbol in api.info["symbols"]:
+            self.ui.pair_comboBox.addItem(symbol["symbol"])
 
         print('System: ' + platform.system())
         print('Version: ' + platform.release())
