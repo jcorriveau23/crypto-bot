@@ -29,7 +29,7 @@ class API():
         if side is "Buy":
             try:
                 orderID = self.client.order_limit_buy(symbol=pair,
-                                                    quantity=round(qty, 2), #TODO uses contraints of pairing
+                                                    quantity=round(qty, 5), #TODO uses contraints of pairing from binance api
                                                     price=str(round(price, 2)))  #TODO uses contraints of pairing
 
                 logger.info('Buy Order Sent => QTY: {} ETH, PRICE: {} USDT/ETH'.format(qty, price))

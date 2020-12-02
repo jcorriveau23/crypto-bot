@@ -2,15 +2,42 @@
 class Algo():
     def __init__(self, type):
         self.type = "jfz"
-        self.lastBuys = {}
-        self.lastSells = {}
-        self.buyCoefs = []
-        self.sellCoefs = []
+        self.last_buys = {}
+        self.last_sells = {}
+        self.buy_coefs = 2
+        self.buy_qtys = []
+        self.sell_coefs = 2
+        self.buyPrices = []
+        self.nb_sells = 0
+        self.nb_buys = 0
 
+    def jfz_algo_create_buys(self, balance, start_price, loss_depth, buys_nb_depth, buy_more_pourcent):
+        lowest_price = start_price * (1 - loss_depth)
 
+        buy_coef = 1 - (lowest_price/start_price)**(1/buys_nb_depth)
 
+        buy_qty = []
+        mult = []
+        buy_price = start_price
 
+        for i in range(buys_nb_depth):
+            buy_price *= (1 - buy_coef)
+            self.buyPrices.append(buy_price)
 
+            buy_qty.append(buy_more_pourcent**i)
+
+            mult.append(buy_qty[i]*self.buyPrices[i])
+        print("buy price list value: {}".format(self.buyPrices))
+
+        start_qty = balance/sum(mult)
+        qty = start_qty
+        for i in range(buys_nb_depth):
+            self.buy_qtys.append(qty)
+            qty *= buy_more_pourcent
+        print("buy qty list value: {}".format(self.buy_qtys))
+
+a = Algo("jfz")
+a.jfz_algo_create_buys(2000, 600, 0.3, 23, 1.08)
 
 ## copie paste de lalgo sur lautre fichier repo
 #
