@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1126</width>
-    <height>831</height>
+    <width>1302</width>
+    <height>798</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -1520,7 +1520,7 @@ QPushButton:pressed {
                    <string notr="true">background: transparent;</string>
                   </property>
                   <property name="currentIndex">
-                   <number>2</number>
+                   <number>1</number>
                   </property>
                   <widget class="QWidget" name="page_home">
                    <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -2026,7 +2026,7 @@ QPushButton:pressed {
                     </property>
                     <property name="icon">
                      <iconset resource="files.qrc">
-                      <normaloff>:/16x16/icons/16x16/cil-folder-open.png</normaloff>:/16x16/icons/16x16/cil-folder-open.png</iconset>
+                      <normaloff>:/16x16/icons/16x16/cil-reload.png</normaloff>:/16x16/icons/16x16/cil-reload.png</iconset>
                     </property>
                    </widget>
                   </widget>
@@ -2063,8 +2063,8 @@ background-image: url(:/16x16/icons/16x16/ceat;
                      <rect>
                       <x>10</x>
                       <y>90</y>
-                      <width>1006</width>
-                      <height>419</height>
+                      <width>1151</width>
+                      <height>451</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -2355,81 +2355,50 @@ QHeaderView::section:vertical
                     <attribute name="verticalHeaderStretchLastSection">
                      <bool>true</bool>
                     </attribute>
-                    <row>
-                     <property name="text">
-                      <string>New Row</string>
-                     </property>
-                     <property name="font">
-                      <font>
-                       <family>Segoe UI</family>
-                      </font>
-                     </property>
-                    </row>
-                    <row>
-                     <property name="text">
-                      <string>New Row</string>
-                     </property>
-                    </row>
-                    <row>
-                     <property name="text">
-                      <string>New Row</string>
-                     </property>
-                    </row>
-                    <row>
-                     <property name="text">
-                      <string>New Row</string>
-                     </property>
-                    </row>
-                    <row>
-                     <property name="text">
-                      <string>New Row</string>
-                     </property>
-                    </row>
-                    <row>
-                     <property name="text">
-                      <string>New Row</string>
-                     </property>
-                    </row>
-                    <column>
-                     <property name="text">
-                      <string>0</string>
-                     </property>
-                    </column>
-                    <column>
-                     <property name="text">
-                      <string>1</string>
-                     </property>
-                    </column>
-                    <column>
-                     <property name="text">
-                      <string>2</string>
-                     </property>
-                    </column>
-                    <column>
-                     <property name="text">
-                      <string>3</string>
-                     </property>
-                    </column>
-                    <item row="0" column="0">
-                     <property name="text">
-                      <string>Test</string>
-                     </property>
-                    </item>
-                    <item row="0" column="1">
-                     <property name="text">
-                      <string>Text</string>
-                     </property>
-                    </item>
-                    <item row="0" column="2">
-                     <property name="text">
-                      <string>Cell</string>
-                     </property>
-                    </item>
-                    <item row="0" column="3">
-                     <property name="text">
-                      <string>Line</string>
-                     </property>
-                    </item>
+                   </widget>
+                   <widget class="QPushButton" name="btn_refresh">
+                    <property name="geometry">
+                     <rect>
+                      <x>20</x>
+                      <y>20</y>
+                      <width>150</width>
+                      <height>30</height>
+                     </rect>
+                    </property>
+                    <property name="minimumSize">
+                     <size>
+                      <width>150</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>Segoe UI</family>
+                      <pointsize>9</pointsize>
+                     </font>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QPushButton {
+	border: 2px solid rgb(52, 59, 72);
+	border-radius: 5px;	
+	background-color: rgb(52, 59, 72);
+}
+QPushButton:hover {
+	background-color: rgb(57, 65, 80);
+	border: 2px solid rgb(61, 70, 86);
+}
+QPushButton:pressed {	
+	background-color: rgb(35, 40, 49);
+	border: 2px solid rgb(43, 50, 61);
+}</string>
+                    </property>
+                    <property name="text">
+                     <string>Refresh</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="files.qrc">
+                      <normaloff>:/16x16/icons/16x16/cil-reload.png</normaloff>:/16x16/icons/16x16/cil-reload.png</iconset>
+                    </property>
                    </widget>
                   </widget>
                   <widget class="QWidget" name="page_trade">

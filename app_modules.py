@@ -22,9 +22,9 @@ from ui_styles import Style
 
 # IMPORT FUNCTIONS
 from ui_functions import *
-
-
 from wallet import *
+
+
 
 ## ==> APP FUNCTIONS
 #from app_functions import *

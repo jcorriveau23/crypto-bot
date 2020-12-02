@@ -5,6 +5,7 @@ from PySide2.QtCore import (QCoreApplication, QPropertyAnimation, QDate, QDateTi
 from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont, QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter, QPixmap, QRadialGradient)
 from PySide2.QtWidgets import *
 
+from api import API
 from app_modules import *
 
 from app_modules import *
@@ -15,16 +16,17 @@ from app_modules import *
 class MainWindow(QMainWindow):
 
     def __init__(self):
+
         QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
         self.api = API("Binance")   # Create and instance that can communicate with an exchange
-        self.get_exchange_info(self.api)
 
-    def get_exchange_info(self, api):
-        for symbol in api.info["symbols"]:
-            self.ui.pair_comboBox.addItem(symbol["symbol"])
+
+    # def get_exchange_info(self, api):
+    #     for symbol in api.info["symbols"]:
+    #         self.ui.pair_comboBox.addItem(symbol["symbol"])
 
         print('System: ' + platform.system())
         print('Version: ' + platform.release())
@@ -36,7 +38,7 @@ class MainWindow(QMainWindow):
         # Remove standard title bar
         UIFunctions.remove_title_bar(True)
 
-        #WalletFrontEnd.add_crypto_display(self)
+
 
         # Window tittle
         self.setWindowTitle('Binance Bot - Cryptocurrency Exchangee')
@@ -111,6 +113,7 @@ class MainWindow(QMainWindow):
             UIFunctions.reset_style(self, "btn_wallet")
             UIFunctions.label_page(self, "Wallet ")
             btn_widget.setStyleSheet(UIFunctions.select_menu(btn_widget.styleSheet()))
+            WalletFrontEnd.display_crypto(self)
 
         # Page trading
         if btn_widget.objectName() == "btn_trade":
