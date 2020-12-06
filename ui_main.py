@@ -18,7 +18,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1302, 798)
+        MainWindow.resize(1293, 720)
         MainWindow.setMinimumSize(QSize(1000, 720))
         palette = QPalette()
         brush = QBrush(QColor(255, 255, 255, 255))
@@ -115,10 +115,10 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setStyleSheet(u"background: transparent;\n"
 "color: rgb(210, 210, 210);")
-        self.horizontalLayout = QHBoxLayout(self.centralwidget)
-        self.horizontalLayout.setSpacing(0)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalLayout.setContentsMargins(10, 10, 10, 10)
+        self.verticalLayout_12 = QVBoxLayout(self.centralwidget)
+        self.verticalLayout_12.setSpacing(0)
+        self.verticalLayout_12.setObjectName(u"verticalLayout_12")
+        self.verticalLayout_12.setContentsMargins(10, 10, 10, 10)
         self.frame_main = QFrame(self.centralwidget)
         self.frame_main.setObjectName(u"frame_main")
         self.frame_main.setStyleSheet(u"/* LINE EDIT */\n"
@@ -686,6 +686,49 @@ class Ui_MainWindow(object):
         self.verticalLayout_10.addWidget(self.label)
 
         self.stackedWidget.addWidget(self.page_home)
+        self.page_virtual_agent = QWidget()
+        self.page_virtual_agent.setObjectName(u"page_virtual_agent")
+        self.page_virtual_agent.setLayoutDirection(Qt.LeftToRight)
+        self.label_9 = QLabel(self.page_virtual_agent)
+        self.label_9.setObjectName(u"label_9")
+        self.label_9.setGeometry(QRect(20, 30, 370, 30))
+        font6 = QFont()
+        font6.setFamily(u"Segoe UI")
+        font6.setPointSize(16)
+        self.label_9.setFont(font6)
+        self.label_9.setStyleSheet(u"")
+        self.label_9.setLineWidth(1)
+        self.label_9.setAlignment(Qt.AlignCenter)
+        self.comboBox_2 = QComboBox(self.page_virtual_agent)
+        self.comboBox_2.addItem("")
+        self.comboBox_2.addItem("")
+        self.comboBox_2.addItem("")
+        self.comboBox_2.setObjectName(u"comboBox_2")
+        self.comboBox_2.setGeometry(QRect(400, 30, 166, 31))
+        font7 = QFont()
+        font7.setFamily(u"Segoe UI")
+        font7.setPointSize(9)
+        self.comboBox_2.setFont(font7)
+        self.comboBox_2.setAutoFillBackground(False)
+        self.comboBox_2.setStyleSheet(u"QComboBox{\n"
+"	background-color: rgb(27, 29, 35);\n"
+"	border-radius: 5px;\n"
+"	border: 2px solid rgb(27, 29, 35);\n"
+"	padding: 5px;\n"
+"	padding-left: 10px;\n"
+"}\n"
+"QComboBox:hover{\n"
+"	border: 2px solid rgb(64, 71, 88);\n"
+"}\n"
+"QComboBox QAbstractItemView {\n"
+"	color: rgb(85, 170, 255);	\n"
+"	background-color: rgb(27, 29, 35);\n"
+"	padding: 10px;\n"
+"	selection-background-color: rgb(39, 44, 54);\n"
+"}")
+        self.comboBox_2.setIconSize(QSize(16, 16))
+        self.comboBox_2.setFrame(True)
+        self.stackedWidget.addWidget(self.page_virtual_agent)
         self.page_history = QWidget()
         self.page_history.setObjectName(u"page_history")
         self.table_history = QTableWidget(self.page_history)
@@ -845,10 +888,7 @@ class Ui_MainWindow(object):
         self.btn_import_history.setObjectName(u"btn_import_history")
         self.btn_import_history.setGeometry(QRect(40, 70, 150, 30))
         self.btn_import_history.setMinimumSize(QSize(150, 30))
-        font6 = QFont()
-        font6.setFamily(u"Segoe UI")
-        font6.setPointSize(9)
-        self.btn_import_history.setFont(font6)
+        self.btn_import_history.setFont(font7)
         self.btn_import_history.setStyleSheet(u"QPushButton {\n"
 "	border: 2px solid rgb(52, 59, 72);\n"
 "	border-radius: 5px;	\n"
@@ -902,6 +942,7 @@ class Ui_MainWindow(object):
         palette2.setBrush(QPalette.Disabled, QPalette.Base, brush12)
         palette2.setBrush(QPalette.Disabled, QPalette.Window, brush12)
         self.table_wallet.setPalette(palette2)
+        self.table_wallet.setAutoFillBackground(True)
         self.table_wallet.setStyleSheet(u"QTableWidget {	\n"
 "	background-color: rgb(39, 44, 54);\n"
 "	padding: 10px;\n"
@@ -975,12 +1016,12 @@ class Ui_MainWindow(object):
         self.table_wallet.verticalHeader().setCascadingSectionResizes(False)
         self.table_wallet.verticalHeader().setHighlightSections(False)
         self.table_wallet.verticalHeader().setStretchLastSection(True)
-        self.btn_refresh = QPushButton(self.page_wallet)
-        self.btn_refresh.setObjectName(u"btn_refresh")
-        self.btn_refresh.setGeometry(QRect(20, 20, 150, 30))
-        self.btn_refresh.setMinimumSize(QSize(150, 30))
-        self.btn_refresh.setFont(font6)
-        self.btn_refresh.setStyleSheet(u"QPushButton {\n"
+        self.btn_wallet_refresh = QPushButton(self.page_wallet)
+        self.btn_wallet_refresh.setObjectName(u"btn_wallet_refresh")
+        self.btn_wallet_refresh.setGeometry(QRect(20, 20, 150, 30))
+        self.btn_wallet_refresh.setMinimumSize(QSize(150, 30))
+        self.btn_wallet_refresh.setFont(font7)
+        self.btn_wallet_refresh.setStyleSheet(u"QPushButton {\n"
 "	border: 2px solid rgb(52, 59, 72);\n"
 "	border-radius: 5px;	\n"
 "	background-color: rgb(52, 59, 72);\n"
@@ -993,7 +1034,7 @@ class Ui_MainWindow(object):
 "	background-color: rgb(35, 40, 49);\n"
 "	border: 2px solid rgb(43, 50, 61);\n"
 "}")
-        self.btn_refresh.setIcon(icon3)
+        self.btn_wallet_refresh.setIcon(icon3)
         self.stackedWidget.addWidget(self.page_wallet)
         self.page_trade = QWidget()
         self.page_trade.setObjectName(u"page_trade")
@@ -1078,7 +1119,7 @@ class Ui_MainWindow(object):
         self.pushButton = QPushButton(self.frame_content_wid_1)
         self.pushButton.setObjectName(u"pushButton")
         self.pushButton.setMinimumSize(QSize(150, 30))
-        self.pushButton.setFont(font6)
+        self.pushButton.setFont(font7)
         self.pushButton.setStyleSheet(u"QPushButton {\n"
 "	border: 2px solid rgb(52, 59, 72);\n"
 "	border-radius: 5px;	\n"
@@ -1189,7 +1230,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 280, 218))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 363, 218))
         self.horizontalLayout_11 = QHBoxLayout(self.scrollAreaWidgetContents)
         self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
         self.plainTextEdit = QPlainTextEdit(self.scrollAreaWidgetContents)
@@ -1218,7 +1259,7 @@ class Ui_MainWindow(object):
         self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.comboBox.setObjectName(u"comboBox")
-        self.comboBox.setFont(font6)
+        self.comboBox.setFont(font7)
         self.comboBox.setAutoFillBackground(False)
         self.comboBox.setStyleSheet(u"QComboBox{\n"
 "	background-color: rgb(27, 29, 35);\n"
@@ -1527,7 +1568,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.addWidget(self.frame_center)
 
 
-        self.horizontalLayout.addWidget(self.frame_main)
+        self.verticalLayout_12.addWidget(self.frame_main)
 
         MainWindow.setCentralWidget(self.centralwidget)
         QWidget.setTabOrder(self.btn_minimize, self.btn_maximize_restore)
@@ -1571,6 +1612,11 @@ class Ui_MainWindow(object):
         self.label_top_info_2.setText(QCoreApplication.translate("MainWindow", u"| HOME", None))
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"Binance Bot - Cryptocurrency Exchange", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Version v0.0.1", None))
+        self.label_9.setText(QCoreApplication.translate("MainWindow", u"Please select your virtual trading agent :", None))
+        self.comboBox_2.setItemText(0, QCoreApplication.translate("MainWindow", u"Neocrypt", None))
+        self.comboBox_2.setItemText(1, QCoreApplication.translate("MainWindow", u"Bot 1", None))
+        self.comboBox_2.setItemText(2, QCoreApplication.translate("MainWindow", u"Bot 2", None))
+
         ___qtablewidgetitem = self.table_history.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("MainWindow", u"0", None));
         ___qtablewidgetitem1 = self.table_history.horizontalHeaderItem(1)
@@ -1625,7 +1671,7 @@ class Ui_MainWindow(object):
         self.table_history.setSortingEnabled(__sortingEnabled)
 
         self.btn_import_history.setText(QCoreApplication.translate("MainWindow", u"Import history", None))
-        self.btn_refresh.setText(QCoreApplication.translate("MainWindow", u"Refresh", None))
+        self.btn_wallet_refresh.setText(QCoreApplication.translate("MainWindow", u"Refresh", None))
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"Trade", None))
         self.labelBoxBlenderInstalation.setText(QCoreApplication.translate("MainWindow", u"BLENDER INSTALLATION", None))
         self.lineEdit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Your Password", None))

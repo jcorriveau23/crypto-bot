@@ -10,8 +10,6 @@ from app_modules import *
 
 from app_modules import *
 
-#from wallet import WalletFrontEnd
-
 
 class MainWindow(QMainWindow):
 
@@ -22,11 +20,6 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
 
         self.api = API("Binance")   # Create and instance that can communicate with an exchange
-
-
-    # def get_exchange_info(self, api):
-    #     for symbol in api.info["symbols"]:
-    #         self.ui.pair_comboBox.addItem(symbol["symbol"])
 
         print('System: ' + platform.system())
         print('Version: ' + platform.release())
@@ -54,14 +47,17 @@ class MainWindow(QMainWindow):
         # Create menus
         ########################################################################
 
-        # Toggle menu size
+        # btn event
         self.ui.btn_toggle_menu.clicked.connect(lambda: UIFunctions.toggle_menu(self, 220, True))
+        self.ui.btn_wallet_refresh.clicked.connect(lambda: WalletFrontEnd.display_crypto(self))
 
         # Add custom menus
         self.ui.stackedWidget.setMinimumWidth(20)
         UIFunctions.add_new_menu(self, "Home", "btn_home", "url(:/16x16/icons/16x16/cil-home.png)", True)
         UIFunctions.add_new_menu(self, "Wallet", "btn_wallet", "url(:/16x16/icons/16x16/cil-credit-card.png)", True)
         UIFunctions.add_new_menu(self, "Trade", "btn_trade", "url(:/16x16/icons/16x16/cil-briefcase.png)", True)
+        UIFunctions.add_new_menu(self, "Virtual Trading Agent", "btn_virtual_trading_agent",
+                                 "url(:/16x16/icons/16x16/cil-user.png)", True)
         UIFunctions.add_new_menu(self, "History", "btn_history", "url(:/16x16/icons/16x16/cil-equalizer.png)", True)
         UIFunctions.add_new_menu(self, "Settings", "btn_settings", "url(:/16x16/icons/16x16/cil-equalizer.png)", False)
 
@@ -120,6 +116,13 @@ class MainWindow(QMainWindow):
             self.ui.stackedWidget.setCurrentWidget(self.ui.page_trade)
             UIFunctions.reset_style(self, "btn_trade")
             UIFunctions.label_page(self, "Trade")
+            btn_widget.setStyleSheet(UIFunctions.select_menu(btn_widget.styleSheet()))
+
+        # Page Virtual Trading Agent
+        if btn_widget.objectName() == "btn_virtual_trading_agent":
+            self.ui.stackedWidget.setCurrentWidget(self.ui.page_virtual_agent)
+            UIFunctions.reset_style(self, "btn_virtual_trading_agent")
+            UIFunctions.label_page(self, "Virtual Trading Agent")
             btn_widget.setStyleSheet(UIFunctions.select_menu(btn_widget.styleSheet()))
 
         # Page history
