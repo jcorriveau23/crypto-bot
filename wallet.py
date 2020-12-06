@@ -10,13 +10,14 @@ class WalletFrontEnd(MainWindow):
 
         info = self.api.client.get_account()
 
-        favorite_coin = ['ETH', 'BTC', 'USDT']
+        favorite_coin = ['ETH', 'BTC', 'BNB', 'USDT', 'XRP']
 
         # Generate empty table
-        for row in range(0, 10):
-            self.ui.table_wallet.insertRow(row)
-        for column in range(0, 6):
-            self.ui.table_wallet.insertColumn(column)
+        if self.ui.table_wallet.rowCount() < 1:
+            for row in range(0, 10):
+                self.ui.table_wallet.insertRow(row)
+            for column in range(0, 6):
+                self.ui.table_wallet.insertColumn(column)
 
         # Table header
         self.ui.table_wallet.setCellWidget(0, 0, create_label('Coin'))
