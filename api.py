@@ -1,6 +1,7 @@
 from requests.exceptions import Timeout
 from requests.exceptions import ConnectionError
-from binance.client import Client
+import ccxt
+import time
 from binance.enums import *
 import logging
 
@@ -13,11 +14,18 @@ file_handler = logging.FileHandler("log_file.log")
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
-class API():
-    def __init__(self, exchange):
-        self.client = Client(api_key=Keys.api_key, api_secret=Keys.api_secret)
-        self.info = self.client.get_exchange_info()
-        self.exchange = exchange  # exchange name
+
+class API:
+    def __init__(self, ex):
+        self.exchange_id = ex
+        exchange_class = getattr(ccxt, ex)
+        self.exchange = exchange_class({
+            'apiKey': Keys.api_key,
+            'secret': Keys.api_secret,
+            'timeout': 50000,
+            'enableRateLimit': True,
+        })
+        self.exchange.load_markets()
 
     ## initiate an order of a specific pairing side and price and qty
     #  input:   pair: ex: ETHUSDT (str)
@@ -28,9 +36,11 @@ class API():
     def create_limit_order(self, pair, side, price, qty):
         if side is "Buy":
             try:
-                orderID = self.client.order_limit_buy(symbol=pair,
-                                                    quantity=round(qty, 5), #TODO uses contraints of pairing from binance api
-                                                    price=str(round(price, 2)))  #TODO uses contraints of pairing
+                orderID = self.exchange.create_limit_buy_order(symbol=pair,
+                                                               quantity=round(qty, 5),
+                                                               # TODO uses contraints of pairing from binance api
+                                                               price=str(
+                                                                   round(price, 2)))  # TODO uses contraints of pairing
 
                 logger.info('Buy Order Sent => QTY: {} ETH, PRICE: {} USDT/ETH'.format(qty, price))
                 return True, orderID
@@ -40,9 +50,9 @@ class API():
 
         elif side is "Sell":
             try:
-                orderID = self.client.order_limit_buy(symbol=pair,
-                                                    quantity=round(qty, 2), #TODO uses contraints of pairing
-                                                    price=str(round(price, 2)))  #TODO uses contraints of pairing
+                orderID = self.exchange.create_limit_sell_order(symbol=pair,
+                                                      quantity=round(qty, 2),  # TODO uses contraints of pairing
+                                                      price=str(round(price, 2)))  # TODO uses contraints of pairing
 
                 logger.info('Buy Order Sent => QTY: {} ETH, PRICE: {} USDT/ETH'.format(qty, price))
                 return True, orderID
@@ -52,19 +62,19 @@ class API():
         else:
             return False
 
-
     ## Validate if an order is filled or not
     #  input:   orderID: ID of the order you want to check if it is filled
     #  return:  success or failed
     def order_isfilled(self, orderID, pair):
         try:
-            order = self.client.get_order(symbol=pair, orderId=orderID)
+            order = self.exchange.fetch_order(symbol=pair, orderId=orderID)
             if order['status'] == 'FILLED':
                 logger.info("Buy order is filled: {}".format(order))
                 return True
 
         except Exception as e:
-            logger.error("Buy Order info could not be fetch:pair: {} OrderId: {}, Exception: {} ".format(pair, orderID, e))
+            logger.error(
+                "Buy Order info could not be fetch:pair: {} OrderId: {}, Exception: {} ".format(pair, orderID, e))
             return False
 
     ## Cancel a specific order
@@ -72,9 +82,10 @@ class API():
     #  return:  success or failed
     def cancel_order(self, oderID, pair):
         try:
-            self.client.cancel_order(symbol=pair, orderId=oderID)
+            self.exchange.cancel_order(symbol=pair, orderId=oderID)
             logger.info('Sell Order canceled')
             return True
         except Exception as e:
-            logger.error("Buy Order Cancel has not worked: Pair: {}, OrderId: {}, Exception: {} ".format(pair, oderID, e))
+            logger.error(
+                "Buy Order Cancel has not worked: Pair: {}, OrderId: {}, Exception: {} ".format(pair, oderID, e))
             return False

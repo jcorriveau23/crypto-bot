@@ -15,12 +15,23 @@ class top(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.api = API("Binance")   # Create and instance that can communicate with an exchange
-        self.get_exchange_info(self.api)
+        self.api = API("binance")   # Create and instance that can communicate with an exchange
+        self.list_pair(self.api)
+        self.list_open_order(self.api)
 
-    def get_exchange_info(self, api):
-        for symbol in api.info["symbols"]:
-            self.ui.pair_comboBox.addItem(symbol["symbol"])
+    def list_pair(self, api):
+        for symbol in api.exchange.markets:
+            self.ui.pair_comboBox.addItem(symbol)
+
+    def list_open_order(self, api):
+        orders = api.exchange.fetch_open_orders(symbol="ETH/USDT")
+        i = 0
+        for order in orders:
+            print("Order {}: {}".format(i, order["info"]))
+            i += 1
+
+
+
 
 if __name__ == "__main__":
     app = QApplication([])
