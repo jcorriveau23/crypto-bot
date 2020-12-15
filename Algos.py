@@ -1,17 +1,22 @@
 
-class Algo():
-    def __init__(self, type):
-        self.type = "jfz"
+class Simplino():
+    def __init__(self):
         self.last_buys = {}
         self.last_sells = {}
         self.buy_coefs = 2
         self.buy_qtys = []
         self.sell_coefs = 2
         self.buyPrices = []
+        self.sell_prices = []
+
         self.nb_sells = 0
         self.nb_buys = 0
 
-    def jfz_algo_create_buys(self, balance, start_price, loss_depth, buys_nb_depth, buy_more_pourcent):
+    def simplino_algo_create_buys(self, balance, start_price, loss_depth, buys_nb_depth, buy_more_pourcent):
+        self.buyPrices = []
+        self.sell_prices = []
+        self.buy_qtys = []
+
         lowest_price = start_price * (1 - loss_depth)
 
         buy_coef = 1 - (lowest_price/start_price)**(1/buys_nb_depth)
@@ -23,51 +28,57 @@ class Algo():
         for i in range(buys_nb_depth):
             buy_price *= (1 - buy_coef)
             self.buyPrices.append(buy_price)
+            if i == 0:
+                self.sell_prices.append(self.buyPrices[i]*1.005) #TODO get rid of hardcode pourcentage on first sell
+            else:
+                self.sell_prices.append(self.buyPrices[i] + (self.buyPrices[i-1] - self.buyPrices[i]) / 2)
 
             buy_qty.append(buy_more_pourcent**i)
 
             mult.append(buy_qty[i]*self.buyPrices[i])
-        print("buy price list value: {}".format(self.buyPrices))
+
 
         start_qty = balance/sum(mult)
         qty = start_qty
         for i in range(buys_nb_depth):
             self.buy_qtys.append(qty)
             qty *= buy_more_pourcent
+
+        print("buy price list value: {}".format(self.buyPrices))
         print("buy qty list value: {}".format(self.buy_qtys))
+        print("sell price list value: {}".format(self.sell_prices))
 
-a = Algo("jfz")
-a.jfz_algo_create_buys(2000, 600, 0.3, 23, 1.08)
+        # def calculate_trigger_prices(pair):
+        #
+        #     vente_possible = Data.LastBuys[pair]['Nb'] - Data.LastSells[pair]['Nb']   #nb d'achat qui est passible d'une vente
+        #
+        #     lenLastBuys = len(Data.LastBuys[pair]['List'])
+        #     lenLastSells = len(Data.LastSells[pair]['List'])                       #nb de vente consécutive
+        #     #Best price to compare to (offset to point on the good last buy)
+        #     offset = lenLastBuys - 1 - vente_possible
+        #     Last_Buy = float(Data.LastBuys[pair]['List'][offset]['Price'])  # le Last_Buy est celui qui n'est pas des miettes
+        #     if lenLastSells > 0:
+        #         Last_Sell = float(Data.LastSells[pair]['List'][0]['Price'])
+        #     #to display on the GUI
+        #     Data.NbVentePossible[pair] = vente_possible
+        #
+        #     #Si aucun achat de realise (condition initiale + pas de vente permise)
+        #     if ((vente_possible == 0) and (lenLastSells == 0)):
+        #         Data.BuyPrice[pair] = Last_Buy - (Data.Buy_multiplication_list[pair][vente_possible] ** 1.3) * 0.0025 * Last_Buy
+        #         Data.SellPrice[pair] = 999999
+        #     #Si aucun achat restant et ventes réalisés dans le passé (on se base sur la derniere vente + Pas de vente permise)
+        #     elif ((vente_possible == 0) and (lenLastSells > 0)):
+        #         Data.LastSells[pair]['List'].clear()
+        #         Data.BuyPrice[pair] = Last_Sell - (Data.Buy_multiplication_list[pair][vente_possible] ** 1.3) * 0.0025 * Last_Sell #cas speciale,
+        #         Data.SellPrice[pair] = 999999
+        #     #Si achats dans lasBuys (on se base sur les derniers achats)
+        #     else:
+        #         Data.BuyPrice[pair] = Last_Buy - (Data.Buy_multiplication_list[pair][vente_possible] ** 1.3) * 0.0025 * Last_Buy
+        #         Data.SellPrice[pair] = Last_Buy + (Data.Sell_multiplication_list[pair][lenLastSells] ** 1.2) * 0.00255 * Last_Buy
 
-## copie paste de lalgo sur lautre fichier repo
-#
-# def calculate_trigger_prices(pair):
-#
-#     vente_possible = Data.LastBuys[pair]['Nb'] - Data.LastSells[pair]['Nb']   #nb d'achat qui est passible d'une vente
-#
-#     lenLastBuys = len(Data.LastBuys[pair]['List'])
-#     lenLastSells = len(Data.LastSells[pair]['List'])                       #nb de vente consécutive
-#     #Best price to compare to (offset to point on the good last buy)
-#     offset = lenLastBuys - 1 - vente_possible
-#     Last_Buy = float(Data.LastBuys[pair]['List'][offset]['Price'])  # le Last_Buy est celui qui n'est pas des miettes
-#     if lenLastSells > 0:
-#         Last_Sell = float(Data.LastSells[pair]['List'][0]['Price'])
-#     #to display on the GUI
-#     Data.NbVentePossible[pair] = vente_possible
-#
-#     #Si aucun achat de realise (condition initiale + pas de vente permise)
-#     if ((vente_possible == 0) and (lenLastSells == 0)):
-#         Data.BuyPrice[pair] = Last_Buy - (Data.Buy_multiplication_list[pair][vente_possible] ** 1.3) * 0.0025 * Last_Buy
-#         Data.SellPrice[pair] = 999999
-#     #Si aucun achat restant et ventes réalisés dans le passé (on se base sur la derniere vente + Pas de vente permise)
-#     elif ((vente_possible == 0) and (lenLastSells > 0)):
-#         Data.LastSells[pair]['List'].clear()
-#         Data.BuyPrice[pair] = Last_Sell - (Data.Buy_multiplication_list[pair][vente_possible] ** 1.3) * 0.0025 * Last_Sell #cas speciale,
-#         Data.SellPrice[pair] = 999999
-#     #Si achats dans lasBuys (on se base sur les derniers achats)
-#     else:
-#         Data.BuyPrice[pair] = Last_Buy - (Data.Buy_multiplication_list[pair][vente_possible] ** 1.3) * 0.0025 * Last_Buy
-#         Data.SellPrice[pair] = Last_Buy + (Data.Sell_multiplication_list[pair][lenLastSells] ** 1.2) * 0.00255 * Last_Buy
+a = Simplino()
+a.simplino_algo_create_buys(2000, 600, 0.3, 23, 1.08)
+
 #
 #
 #
