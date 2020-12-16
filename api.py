@@ -1,8 +1,4 @@
-from requests.exceptions import Timeout
-from requests.exceptions import ConnectionError
 import ccxt
-import time
-from binance.enums import *
 import logging
 
 import Keys
@@ -27,13 +23,21 @@ class API:
         })
         self.exchange.load_markets()
 
-    ## initiate an order of a specific pairing side and price and qty
+    ##
     #  input:   pair: ex: ETHUSDT (str)
     #           side: "Buy" or "Sell"
     #           price:  price value (float)
     #  return:  ID of the order created
     #           success or failed
     def create_limit_order(self, pair, side, price, qty):
+        """
+        initiate an order of a specific pairing side and price and qty
+        :param pair:
+        :param side:    Buy or Sell
+        :param price:
+        :param qty:
+        :return:
+        """
         if side is "Buy":
             try:
                 order_id = self.exchange.create_limit_buy_order(pair,
@@ -74,7 +78,7 @@ class API:
         :return:
         """
         try:
-            orders = self.exchange.fetch_open_orders(symbol=pair)
+            orders = self.exchange.fetch_orders(symbol=pair)
             print(orders)
             for order in orders:
                 print(order)
@@ -94,12 +98,12 @@ class API:
 
         except Exception as e:
             logging.error("Order info could not be fetch, Exception: {} ".format(e))
-            return False, None, orders
+            return False, None, None
 
     def cancel_order(self, order_id, pair):
         """
         Cancel a specific order
-        
+
         :param order_id: ID of the order you want to cancel
         :param pair:
         :return:
