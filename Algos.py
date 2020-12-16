@@ -17,6 +17,8 @@ class Simplino():
         self.nb_sells = 0
         self.nb_buys = 0
 
+        self.buy_qty = 0
+
         self.buy_order_id = 0
         self.sell_order_id = 0
 

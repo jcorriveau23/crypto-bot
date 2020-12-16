@@ -65,17 +65,21 @@ class API:
     ## Validate if an order is filled or not
     #  input:   orderID: ID of the order you want to check if it is filled
     #  return:  success or failed
-    def order_isfilled(self, orderID, pair):
+    def order_isfilled(self, pair, buy_order_id, sell_order_id):
         try:
-            order = self.exchange.fetch_order(symbol=pair, orderId=orderID)
-            if order['status'] == 'FILLED':
-                logger.info("Buy order is filled: {}".format(order))
-                return True
+            orders = self.api.exchange.fetch_open_orders(symbol=pair)
+            for order in orders:
+                if order["info"]["orderId"] == buy_order_id:
+                    if order["info"]["status"] == "FILLED":
+                        return True, "BUY", order
+
+                elif order["info"]["orderId"] == sell_order_id:
+                    if order["info"]["status"] == "FILLED":
+                        return True, "SELL", order
 
         except Exception as e:
-            logger.error(
-                "Buy Order info could not be fetch:pair: {} OrderId: {}, Exception: {} ".format(pair, orderID, e))
-            return False
+            logging.error("Order info could not be fetch, Exception: {} ".format(e))
+        return False, None, None
 
     ## Cancel a specific order
     #  input:   orderID: ID of the order you want to cancel

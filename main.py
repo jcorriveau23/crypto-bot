@@ -92,14 +92,59 @@ class top(QMainWindow):
     def main_simplino(self):
         time.sleep(4)
         while True:
-            #main loop
-            pass
+            filled, side, order_info = self.api.order_isfilled(self.simplino.pair,
+                                                              self.simplino.buy_order_id,
+                                                              self.simplino.sell_order_id)
+            if filled:
+                if side == "BUY":
+                    self.buy_order_filled(order_info)
+                elif side == "SELL":
+                    self.sell_order_filled(order_info)
 
-    def is_buy_order_filled(self):
-        pass
 
-    def is_sell_order_filled(self):
-        pass
+    def buy_order_filled(self, order_info):
+        self.simplino.nb_buys += 1
+        self.simplino.buy_qty += float(order_info["info"]["executedQty"])
+
+        if self.api.cancel_order(self.simplino.sell_order_id, self.simplino.pair):
+            nb_possible_sell = self.simplino.nb_buys - self.simplino.nb_sells
+
+            buy_price = self.simplino.buyPrices[nb_possible_sell]
+            buy_qty = self.simplino.buy_qtys[nb_possible_sell]
+
+            self.simplino.buy_order_id = self.api.create_limit_order(self.simplino.pair,
+                                                                     "Buy",
+                                                                     buy_price,
+                                                                     buy_qty)
+            sell_price = self.simplino.sell_prices[nb_possible_sell - 1]
+            sell_qty = self.simplino.buy_qty/nb_possible_sell
+
+            self.simplino.buy_order_id = self.api.create_limit_order(self.simplino.pair,
+                                                                     "Sell",
+                                                                     sell_price,
+                                                                     sell_qty)
+
+
+    def sell_order_filled(self, order_info):
+        self.simplino.nb_sells += 1
+        self.simplino.buy_qty -= float(order_info["info"]["executedQty"])
+        if self.api.cancel_order(self.simplino.buy_order_id, self.simplino.pair):
+            nb_possible_sell = self.simplino.nb_buys - self.simplino.nb_sells
+
+            buy_price = self.simplino.buyPrices[nb_possible_sell]
+            buy_qty = self.simplino.buy_qtys[nb_possible_sell]
+
+            self.simplino.buy_order_id = self.api.create_limit_order(self.simplino.pair,
+                                                                     "Buy",
+                                                                     buy_price,
+                                                                     buy_qty)
+            sell_price = self.simplino.sell_prices[nb_possible_sell - 1]
+            sell_qty = self.simplino.buy_qty / nb_possible_sell
+
+            self.simplino.buy_order_id = self.api.create_limit_order(self.simplino.pair,
+                                                                     "Sell",
+                                                                     sell_price,
+                                                                     sell_qty)
 
     def create_table(self):
         self.ui.tableWidget.clear()
@@ -131,14 +176,6 @@ class top(QMainWindow):
     def list_pair(self, api):
         for symbol in api.exchange.markets:
             self.ui.pair_comboBox.addItem(symbol)
-
-    def list_open_order(self, api):
-        orders = api.exchange.fetch_open_orders(symbol="ETH/USDT")
-        i = 0
-        for order in orders:
-            print("Order {}: {}".format(i, order["info"]))
-            i += 1
-
 
 if __name__ == "__main__":
     app = QApplication([])
