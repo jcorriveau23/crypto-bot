@@ -22,8 +22,7 @@ class top(QMainWindow):
 
         self.api = API("binance")  # Create and instance that can communicate with an exchange
         self.simplino = None
-        self.list_pair(self.api)
-        self.list_open_order(self.api)
+        self.on_mount(self.api)
 
         self.thread_simplino = None
         self.thread_simplino_kill = False
@@ -41,7 +40,7 @@ class top(QMainWindow):
         info = self.api.exchange.fetch_balance()
         balances = info['info']['balances']
 
-        for asset in balances:  # fetch the balance of the pairing asset side selling side
+        for asset in balances:  # fetch the balance of the pairing asset. Selling side
             if asset['asset'] == self.simplino.sell_asset:
                 balance = float(asset['free'])
 
@@ -105,9 +104,11 @@ class top(QMainWindow):
     def buy_order_filled(self, order_info):
         self.simplino.nb_buys += 1
         self.simplino.buy_qty += float(order_info["info"]["executedQty"])
+        nb_possible_sell = self.simplino.nb_buys - self.simplino.nb_sells
+        # TODO add filled order to tab with function  add_filled_order_in_tab
+        if nb_possible_sell > 1:
+            self.api.cancel_order(self.simplino.sell_order_id, self.simplino.pair)
 
-        if self.api.cancel_order(self.simplino.sell_order_id, self.simplino.pair):
-            nb_possible_sell = self.simplino.nb_buys - self.simplino.nb_sells
 
             buy_price = self.simplino.buyPrices[nb_possible_sell]
             buy_qty = self.simplino.buy_qtys[nb_possible_sell]
@@ -128,6 +129,7 @@ class top(QMainWindow):
     def sell_order_filled(self, order_info):
         self.simplino.nb_sells += 1
         self.simplino.buy_qty -= float(order_info["info"]["executedQty"])
+        #TODO add filled order to tab add_filled_order_in_tab
         if self.api.cancel_order(self.simplino.buy_order_id, self.simplino.pair):
             nb_possible_sell = self.simplino.nb_buys - self.simplino.nb_sells
 
@@ -173,9 +175,26 @@ class top(QMainWindow):
         self.ui.Buy_asset_label_4.setText(self.simplino.buy_asset)
         self.ui.Buy_asset_label_5.setText(self.simplino.buy_asset)
 
-    def list_pair(self, api):
+    def add_filled_order_in_tab(self, order_info):
+        row = self.simplino.nb_buys + self.simplino.nb_sells
+        self.ui.Order_filled_tab.setRowCount(row)
+        self.ui.Order_filled_tab.setItem(0, 0, QTableWidgetItem((order_info["info"]["orderId"])))
+        self.ui.Order_filled_tab.setItem(0, 1, QTableWidgetItem(())) #TODO need right keys
+        self.ui.Order_filled_tab.setItem(0, 2, QTableWidgetItem(("Qty"))) #TODO need right keys
+        self.ui.Order_filled_tab.setItem(0, 3, QTableWidgetItem(("Time")))#TODO need right keys
+
+
+    def on_mount(self, api):
         for symbol in api.exchange.markets:
             self.ui.pair_comboBox.addItem(symbol)
+
+        self.ui.Order_filled_tab.setRowCount(1)
+        self.ui.Order_filled_tab.setColumnCount(4)
+
+        self.ui.Order_filled_tab.setItem(0, 0, QTableWidgetItem(("order ID")))
+        self.ui.Order_filled_tab.setItem(0, 1, QTableWidgetItem(("Side")))
+        self.ui.Order_filled_tab.setItem(0, 2, QTableWidgetItem(("Qty")))
+        self.ui.Order_filled_tab.setItem(0, 3, QTableWidgetItem(("Time")))
 
 if __name__ == "__main__":
     app = QApplication([])

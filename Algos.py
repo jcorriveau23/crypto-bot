@@ -7,9 +7,6 @@ class Simplino():
         self.buy_asset = trading_asset[0]
         self.sell_asset = trading_asset[1]
 
-        self.last_buys = {}
-        self.last_sells = {}
-
         self.buy_qtys = []
         self.buyPrices = []
         self.sell_prices = []
