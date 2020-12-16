@@ -95,7 +95,7 @@ class API:
                         return True, "SELL", order
                     else:
                         pass  # TODO other cases
-
+            return False, None, orders
         except Exception as e:
             logging.error("Order info could not be fetch, Exception: {} ".format(e))
             return False, None, None
