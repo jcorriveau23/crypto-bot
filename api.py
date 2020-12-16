@@ -36,69 +36,79 @@ class API:
     def create_limit_order(self, pair, side, price, qty):
         if side is "Buy":
             try:
-                orderID = self.exchange.create_limit_buy_order(pair,
-                                                               round(qty, 5),
-                                                               # TODO uses contraints of pairing from binance api
-                                                               round(price, 2)
-                                                               # TODO uses contraints of pairing
-                                                               )
-
+                order_id = self.exchange.create_limit_buy_order(pair,
+                                                                round(qty, 5),
+                                                                # TODO uses contraints of pairing from binance api
+                                                                round(price, 2)
+                                                                # TODO uses contraints of pairing
+                                                                )
 
                 logger.info('Buy Order Sent => QTY: {} ETH, PRICE: {} USDT/ETH'.format(qty, price))
-                return True, orderID['info']['orderId']
+                return True, order_id['info']['orderId']
             except Exception as e:
                 logger.error('Buy Order could not be send! Exception: {}'.format(e))
                 return False, None
 
         elif side is "Sell":
             try:
-                orderID = self.exchange.create_limit_sell_order(pair,
-                                                                round(qty, 2),
-                                                                # TODO uses contraints of pairing
-                                                                round(price, 2))  # TODO uses contraints of pairing
+                order_id = self.exchange.create_limit_sell_order(pair,
+                                                                 round(qty, 2),
+                                                                 # TODO uses contraints of pairing
+                                                                 round(price, 2))  # TODO uses contraints of pairing
 
                 logger.info('Buy Order Sent => QTY: {} ETH, PRICE: {} USDT/ETH'.format(qty, price))
-                return True, orderID['info']['orderId']
+                return True, order_id['info']['orderId']
             except Exception as e:
                 logger.error('Buy Order could not be send! Exception: {}'.format(e))
                 return False, None
         else:
             return False, None
 
-    ## Validate if an order is filled or not
-    #  input:   orderID: ID of the order you want to check if it is filled
-    #  return:  success or failed
     def order_isfilled(self, pair, buy_order_id, sell_order_id):
+        """
+        Validate if that buy and sell order is  fill
+
+        :param pair:
+        :param buy_order_id:
+        :param sell_order_id:
+        :return:
+        """
         try:
             orders = self.exchange.fetch_open_orders(symbol=pair)
+            print(orders)
             for order in orders:
+                print(order)
                 if order["info"]["orderId"] == buy_order_id:
                     if order["info"]["status"] == "FILLED":
+                        logger.info('Buy order is filled')
                         return True, "BUY", order
                     else:
-                        # TODO other cases
-                        return False, None, orders
+                        pass  # TODO other cases
 
                 elif order["info"]["orderId"] == sell_order_id:
                     if order["info"]["status"] == "FILLED":
+                        logger.info('Sell order is filled')
                         return True, "SELL", order
                     else:
-                        # TODO other cases
-                        return False, None, orders
+                        pass  # TODO other cases
 
         except Exception as e:
             logging.error("Order info could not be fetch, Exception: {} ".format(e))
             return False, None, orders
 
-    ## Cancel a specific order
-    #  input:   orderID: ID of the order you want to cancel
-    #  return:  success or failed
-    def cancel_order(self, oderID, pair):
+    def cancel_order(self, order_id, pair):
+        """
+        Cancel a specific order
+        
+        :param order_id: ID of the order you want to cancel
+        :param pair:
+        :return:
+        """
         try:
-            self.exchange.cancel_order(symbol=pair, orderId=oderID)
+            self.exchange.cancel_order(symbol=pair, orderId=order_id)
             logger.info('Sell Order canceled')
             return True
         except Exception as e:
             logger.error(
-                "Buy Order Cancel has not worked: Pair: {}, OrderId: {}, Exception: {} ".format(pair, oderID, e))
+                "Buy Order Cancel has not worked: Pair: {}, OrderId: {}, Exception: {} ".format(pair, order_id, e))
             return False

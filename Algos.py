@@ -43,13 +43,12 @@ class Simplino():
         for i in range(buys_nb_depth):
             buy_price *= (1 - buy_coef)
             self.buyPrices.append(buy_price)
-
             if i == 0:
                 self.sell_prices.append(self.buyPrices[i]*1.005) #TODO get rid of hardcode percentage on first sell
             else:
                 self.sell_prices.append(self.buyPrices[i] + (self.buyPrices[i-1] - self.buyPrices[i]) / 2)
 
-            buy_qty.append(buy_more_pourcent**i)
+            buy_qty.append((1 + buy_more_pourcent)**i)
 
             mult.append(buy_qty[i]*self.buyPrices[i])
 
@@ -58,7 +57,7 @@ class Simplino():
         qty = start_qty
         for i in range(buys_nb_depth):
             self.buy_qtys.append(qty)
-            qty *= buy_more_pourcent
+            qty *= (1 + buy_more_pourcent)
 
         print("buy price list value: {}".format(self.buyPrices))
         print("buy qty list value: {}".format(self.buy_qtys))
