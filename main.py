@@ -1,14 +1,16 @@
+
+
+from app_modules import *
+
 import sys
 import platform
 from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.QtCore import (QCoreApplication, QPropertyAnimation, QDate, QDateTime, QMetaObject, QObject, QPoint, QRect, QSize, QTime, QUrl, Qt, QEvent)
-from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont, QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter, QPixmap, QRadialGradient)
+from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont, QFontDatabase, QIcon, QKeySequence,
+                           QLinearGradient, QPalette, QPainter, QPixmap, QRadialGradient)
 from PySide2.QtWidgets import *
 
 from api import API
-from app_modules import *
-
-from app_modules import *
 
 
 class MainWindow(QMainWindow):
@@ -31,21 +33,21 @@ class MainWindow(QMainWindow):
         # Remove standard title bar
         UIFunctions.remove_title_bar(True)
 
-
-
         # Window tittle
         self.setWindowTitle('Binance Bot - Cryptocurrency Exchangee')
         UIFunctions.label_title(self, 'Home')
         UIFunctions.label_description(self, 'Set text')
 
         # Window size
-        start_size = QSize(1000, 720)
+        start_size = QSize(1280, 720)
         self.resize(start_size)
         self.setMinimumSize(start_size)
 
         ########################################################################
         # Create menus
         ########################################################################
+
+        self.drag_pos = None
 
         # btn event
         self.ui.btn_toggle_menu.clicked.connect(lambda: UIFunctions.toggle_menu(self, 220, True))
@@ -93,17 +95,18 @@ class MainWindow(QMainWindow):
     # Menus - Dynamic widget change
     ########################################################################
     def button(self):
-        # GET BT CLICKED
+
+        # Get btn clicked event
         btn_widget = self.sender()
 
-        # Page home
+        # Page - Home
         if btn_widget.objectName() == "btn_home":
             self.ui.stackedWidget.setCurrentWidget(self.ui.page_home)
             UIFunctions.reset_style(self, "btn_home")
             UIFunctions.label_page(self, "Home")
             btn_widget.setStyleSheet(UIFunctions.select_menu(btn_widget.styleSheet()))
 
-        # Page wallet
+        # Page - Wallet
         if btn_widget.objectName() == "btn_wallet":
             self.ui.stackedWidget.setCurrentWidget(self.ui.page_wallet)
             UIFunctions.reset_style(self, "btn_wallet")
@@ -111,28 +114,28 @@ class MainWindow(QMainWindow):
             btn_widget.setStyleSheet(UIFunctions.select_menu(btn_widget.styleSheet()))
             WalletFrontEnd.display_crypto(self)
 
-        # Page trading
+        # Page - Trading
         if btn_widget.objectName() == "btn_trade":
             self.ui.stackedWidget.setCurrentWidget(self.ui.page_trade)
             UIFunctions.reset_style(self, "btn_trade")
             UIFunctions.label_page(self, "Trade")
             btn_widget.setStyleSheet(UIFunctions.select_menu(btn_widget.styleSheet()))
 
-        # Page Virtual Trading Agent
+        # Page - Virtual Trading Agent
         if btn_widget.objectName() == "btn_virtual_trading_agent":
             self.ui.stackedWidget.setCurrentWidget(self.ui.page_virtual_agent)
             UIFunctions.reset_style(self, "btn_virtual_trading_agent")
             UIFunctions.label_page(self, "Virtual Trading Agent")
             btn_widget.setStyleSheet(UIFunctions.select_menu(btn_widget.styleSheet()))
 
-        # Page history
+        # Page - History
         if btn_widget.objectName() == "btn_history":
             self.ui.stackedWidget.setCurrentWidget(self.ui.page_history)
             UIFunctions.reset_style(self, "btn_history")
             UIFunctions.label_page(self, "History")
             btn_widget.setStyleSheet(UIFunctions.select_menu(btn_widget.styleSheet()))
 
-        # Page setting
+        # Page - Setting
         if btn_widget.objectName() == "btn_settings":
             self.ui.stackedWidget.setCurrentWidget(self.ui.page_widgets)
             UIFunctions.reset_style(self, "btn_settings")

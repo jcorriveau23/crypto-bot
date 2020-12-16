@@ -14,7 +14,7 @@ class WalletFrontEnd(MainWindow):
 
         # Generate empty table
         if self.ui.table_wallet.rowCount() < 1:
-            for row in range(0, 10):
+            for row in range(0, len(favorite_coin)):
                 self.ui.table_wallet.insertRow(row)
             for column in range(0, 6):
                 self.ui.table_wallet.insertColumn(column)
@@ -29,10 +29,10 @@ class WalletFrontEnd(MainWindow):
 
         # Table info
         row_number = 1
-        print( info['balances'])
+        # print(info['balances'])
         for assets in info['balances']:
             if assets['asset'] in favorite_coin:
-                print(assets['asset'])
+                # print(assets['asset'])
 
                 coin_name = assets['asset']
 
@@ -71,6 +71,6 @@ def create_button_coin(coin_name):
     button.setIconSize(QSize(32, 32))
     button.setText(coin_name)
     button.setToolTip(coin_name)
-    # button.clicked.connect(self.button)
+    # button.clicked.connect(self.button) #
     return button
 
