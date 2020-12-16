@@ -45,7 +45,7 @@ class API:
 
 
                 logger.info('Buy Order Sent => QTY: {} ETH, PRICE: {} USDT/ETH'.format(qty, price))
-                return True, orderID
+                return True, orderID['info']['orderId']
             except Exception as e:
                 logger.error('Buy Order could not be send! Exception: {}'.format(e))
                 return False, None
@@ -58,37 +58,37 @@ class API:
                                                                 round(price, 2))  # TODO uses contraints of pairing
 
                 logger.info('Buy Order Sent => QTY: {} ETH, PRICE: {} USDT/ETH'.format(qty, price))
-                return True, orderID
+                return True, orderID['info']['orderId']
             except Exception as e:
                 logger.error('Buy Order could not be send! Exception: {}'.format(e))
                 return False, None
         else:
-            return False
+            return False, None
 
     ## Validate if an order is filled or not
     #  input:   orderID: ID of the order you want to check if it is filled
     #  return:  success or failed
     def order_isfilled(self, pair, buy_order_id, sell_order_id):
         try:
-            orders = self.api.exchange.fetch_open_orders(symbol=pair)
+            orders = self.exchange.fetch_open_orders(symbol=pair)
             for order in orders:
                 if order["info"]["orderId"] == buy_order_id:
                     if order["info"]["status"] == "FILLED":
                         return True, "BUY", order
                     else:
                         # TODO other cases
-                        pass
+                        return False, None, orders
 
                 elif order["info"]["orderId"] == sell_order_id:
                     if order["info"]["status"] == "FILLED":
                         return True, "SELL", order
                     else:
                         # TODO other cases
-                        pass
+                        return False, None, orders
 
         except Exception as e:
             logging.error("Order info could not be fetch, Exception: {} ".format(e))
-        return False, None, orders
+            return False, None, orders
 
     ## Cancel a specific order
     #  input:   orderID: ID of the order you want to cancel

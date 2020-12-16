@@ -91,16 +91,16 @@ class top(QMainWindow):
             logging.info("Simplino is not running")
 
     def main_simplino(self):
-        print("started")
         while True:
             if self.thread_simplino_kill:
                 return
-            print("running")
             orderbook = self.api.exchange.fetch_order_book(self.simplino.pair)
 
             filled, side, order_info = self.api.order_isfilled(self.simplino.pair,
                                                                self.simplino.buy_order_id,
                                                                self.simplino.sell_order_id)
+
+            print(order_info)
 
             if filled:
                 if side == "BUY":
@@ -115,10 +115,14 @@ class top(QMainWindow):
 
     def buy_order_filled(self, order_info):
         self.simplino.nb_buys += 1
-        self.simplino.buy_qty += float(order_info["info"]["executedQty"])
+        qty = float(order_info["info"]["executedQty"])
+        price = float(order_info["info"]["price"])
+        self.simplino.buy_qty += qty
         self.simplino.nb_possible_sell = self.simplino.nb_buys - self.simplino.nb_sells
 
-        # TODO add filled order to tab with function  add_filled_order_in_tab
+        fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
+
+        self.invested -= (1-fee_rate)*qty*price
 
         if self.simplino.nb_possible_sell > 1:  # a sell order is open?
             self.api.cancel_order(self.simplino.sell_order_id, self.simplino.pair)
@@ -147,8 +151,15 @@ class top(QMainWindow):
 
     def sell_order_filled(self, order_info):
         self.simplino.nb_sells += 1
-        self.simplino.buy_qty -= float(order_info["info"]["executedQty"])
-        # TODO add filled order to tab add_filled_order_in_tab
+        qty = float(order_info["info"]["executedQty"])
+        price = float(order_info["info"]["price"])
+        self.simplino.buy_qty -= qty
+
+
+
+        fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
+        self.invested += (1 - fee_rate) * qty * price
+
         if self.api.cancel_order(self.simplino.buy_order_id, self.simplino.pair):
             self.simplino.nb_possible_sell = self.simplino.nb_buys - self.simplino.nb_sells
 
@@ -193,6 +204,7 @@ class top(QMainWindow):
         self.ui.price_pairing_label_4.setText(self.simplino.sell_asset)
         self.ui.Pairing_label.setText(self.simplino.pair)
         self.ui.sell_asset_label.setText(self.simplino.sell_asset)
+        self.ui.sell_asset_label_2.setText(self.simplino.sell_asset)
         self.ui.Buy_asset_label.setText(self.simplino.buy_asset)
         self.ui.Buy_asset_label_2.setText(self.simplino.buy_asset)
         self.ui.Buy_asset_label_3.setText(self.simplino.buy_asset)
@@ -220,21 +232,22 @@ class top(QMainWindow):
         self.ui.Order_filled_tab.setItem(0, 3, QTableWidgetItem(("Time")))
 
     def update_visual(self, order_book, filled, orders):
-        bid_price = float(order_book['bids'][0])
-        ask_price = float(order_book['ask'][0])
+        print(order_book['bids'][0])
+        bid_price = float(order_book['bids'][0][0])
+        ask_price = float(order_book['asks'][0][0])
         # we assume that price equal mean between bids and ask price (dont need to call the api again)
         current_price = (bid_price + ask_price) / 2
 
-        self.ui.price_label.setText(str(current_price))
-        self.ui.ask_price_label.setText(str(ask_price))
-        self.ui.bid_price_label.setText(str(bid_price))
+        self.ui.price_label.setText(str(round(current_price, 2)))   # TODO get rid of hardcode
+        self.ui.ask_price_label.setText(str(round(ask_price, 2)))   # TODO get rid of hardcode
+        self.ui.bid_price_label.setText(str(round(bid_price, 2)))   # TODO get rid of hardcode
 
         # calculate profit if selling all at bid price (to be sure that its get filled)
         fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
         print(fee_rate)  # TODO validate that fee rate printed are good for calculation next line
-        sell_profits = self.simplino.invest + (fee_rate * bid_price) * self.simplino.buy_qty
+        sell_profits = self.simplino.invested + (fee_rate * bid_price) * self.simplino.buy_qty
 
-        self.ui.gain_label.setText(str(sell_profits))
+        self.ui.gain_label.setText(str(round(sell_profits, 2)))   # TODO get rid of hardcode
 
         if filled:  # if an order has also filled update simplino data visuals
             self.ui.Buy_order_filled_label.setText(str(self.simplino.nb_buys))
@@ -251,11 +264,11 @@ class top(QMainWindow):
             for order in orders:
                 if order["info"]["orderId"] == self.simplino.buy_order_id:
                     self.ui.buy_qty_label.setText(order["info"]['origQty'])
-                    self.ui.buy_filled_Qty_label.setText(order["info"]["executeQty"])
+                    self.ui.buy_filled_Qty_label.setText(order["info"]["executedQty"])
 
                 if order["info"]["orderId"] == self.simplino.sell_order_id:
                     self.ui.sell_qty_label.setText(order["info"]['origQty'])
-                    self.ui.sell_filled_Qty_label.setText(order["info"]["executeQty"])
+                    self.ui.sell_filled_Qty_label.setText(order["info"]["executedQty"])
 
 
 
