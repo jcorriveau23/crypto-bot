@@ -36,11 +36,13 @@ class API:
     def create_limit_order(self, pair, side, price, qty):
         if side is "Buy":
             try:
-                orderID = self.exchange.create_limit_buy_order(symbol=pair,
-                                                               quantity=round(qty, 5),
+                orderID = self.exchange.create_limit_buy_order(pair,
+                                                               round(qty, 5),
                                                                # TODO uses contraints of pairing from binance api
-                                                               price=str(
-                                                                   round(price, 2)))  # TODO uses contraints of pairing
+                                                               round(price, 2)
+                                                               # TODO uses contraints of pairing
+                                                               )
+
 
                 logger.info('Buy Order Sent => QTY: {} ETH, PRICE: {} USDT/ETH'.format(qty, price))
                 return True, orderID
@@ -50,9 +52,10 @@ class API:
 
         elif side is "Sell":
             try:
-                orderID = self.exchange.create_limit_sell_order(symbol=pair,
-                                                      quantity=round(qty, 2),  # TODO uses contraints of pairing
-                                                      price=str(round(price, 2)))  # TODO uses contraints of pairing
+                orderID = self.exchange.create_limit_sell_order(pair,
+                                                                round(qty, 2),
+                                                                # TODO uses contraints of pairing
+                                                                round(price, 2))  # TODO uses contraints of pairing
 
                 logger.info('Buy Order Sent => QTY: {} ETH, PRICE: {} USDT/ETH'.format(qty, price))
                 return True, orderID
@@ -72,14 +75,20 @@ class API:
                 if order["info"]["orderId"] == buy_order_id:
                     if order["info"]["status"] == "FILLED":
                         return True, "BUY", order
+                    else:
+                        # TODO other cases
+                        pass
 
                 elif order["info"]["orderId"] == sell_order_id:
                     if order["info"]["status"] == "FILLED":
                         return True, "SELL", order
+                    else:
+                        # TODO other cases
+                        pass
 
         except Exception as e:
             logging.error("Order info could not be fetch, Exception: {} ".format(e))
-        return False, None, None
+        return False, None, orders
 
     ## Cancel a specific order
     #  input:   orderID: ID of the order you want to cancel

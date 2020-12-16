@@ -11,10 +11,14 @@ class Simplino():
         self.buyPrices = []
         self.sell_prices = []
 
+        self.nb_buy_depth = 0
+
         self.nb_sells = 0
         self.nb_buys = 0
+        self.nb_possible_sell = 0
 
         self.buy_qty = 0
+        self.invested = 0
 
         self.buy_order_id = 0
         self.sell_order_id = 0
@@ -25,6 +29,8 @@ class Simplino():
         self.buyPrices = []
         self.sell_prices = []
         self.buy_qtys = []
+
+        self.nb_buy_depth = buys_nb_depth
 
         lowest_price = start_price * (1 - loss_depth)
 
@@ -37,8 +43,9 @@ class Simplino():
         for i in range(buys_nb_depth):
             buy_price *= (1 - buy_coef)
             self.buyPrices.append(buy_price)
+
             if i == 0:
-                self.sell_prices.append(self.buyPrices[i]*1.005) #TODO get rid of hardcode pourcentage on first sell
+                self.sell_prices.append(self.buyPrices[i]*1.005) #TODO get rid of hardcode percentage on first sell
             else:
                 self.sell_prices.append(self.buyPrices[i] + (self.buyPrices[i-1] - self.buyPrices[i]) / 2)
 
