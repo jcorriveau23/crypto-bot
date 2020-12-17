@@ -1,21 +1,26 @@
-from PyQt5.QtWidgets import QMdiArea, QMainWindow, QGridLayout, QVBoxLayout, QTabWidget, QApplication, QTableWidgetItem
-from PyQt5 import QtWidgets
+import sys
+
+from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtCore import (QCoreApplication, QPropertyAnimation, QDate, QDateTime, QMetaObject, QObject, QPoint, QRect, QSize, QTime, QUrl, Qt, QEvent)
+from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont, QFontDatabase, QIcon, QKeySequence,
+                           QLinearGradient, QPalette, QPainter, QPixmap, QRadialGradient)
+from PySide2.QtWidgets import *
+
 import logging
 import threading
 import time
 from api import API
 from Algos import Simplino
 
-from ui_main import Ui_MainWindow
+from ui_widget_simplino import Ui_Form
 
 MAKER_REFERAL_DISCOUNT = 0.6
 
-
 class TopSimplino(QMainWindow):
-    def __init__(self, parent=None):
-        super().__init__()
+    def __init__(self):
+        QMainWindow.__init__(self)
 
-        self.ui = Ui_MainWindow()
+        self.ui = Ui_Form()
         self.ui.setupUi(self)
 
         self.ui.calculate_button.clicked.connect(lambda: self.btn_calculate_simplino())
@@ -29,7 +34,7 @@ class TopSimplino(QMainWindow):
         self.thread_simplino = None
         self.thread_simplino_kill = False
         self.running = False
-
+        self.show()
     def btn_calculate_simplino(self):
 
         start_price = float(self.ui.start_price_text_input.text())
@@ -294,9 +299,8 @@ class TopSimplino(QMainWindow):
 
 
 if __name__ == "__main__":
-    app = QApplication([])
-
-    top = TopSimplino()
-    top.show()
-
-    app.exec_()
+    app = QApplication(sys.argv)
+    #QtGui.QFontDatabase.addApplicationFont('fonts/segoeui.ttf')
+    #QtGui.QFontDatabase.addApplicationFont('fonts/segoeuib.ttf')
+    window = TopSimplino()
+    sys.exit(app.exec_())
