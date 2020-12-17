@@ -189,7 +189,7 @@ class TopSimplino(QMainWindow):
     def create_table(self):
         self.ui.tableWidget.clear()
         self.ui.tableWidget.setRowCount(len(self.simplino.buyPrices) + 1)
-        self.ui.tableWidget.setColumnCount(4)
+        self.ui.tableWidget.setColumnCount(5)
 
         self.ui.tableWidget.setItem(0, 0, QTableWidgetItem("Buy Price"))
         self.ui.tableWidget.setItem(0, 1, QTableWidgetItem("Buy Qty"))
