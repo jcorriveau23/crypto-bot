@@ -200,7 +200,7 @@ class TopSimplino(QMainWindow):
         cumulate_max = 0
 
         for i in range(1, len(self.simplino.buyPrices) + 1):
-            cumulate_max += i * self.simplino.buy_qtys[i - 1] * self.simplino.buyPrices[i - 1]
+            cumulate_max = i * self.simplino.buy_qtys[i - 1] * self.simplino.buyPrices[i - 1]
             cumulate += self.simplino.buy_qtys[i - 1] * self.simplino.buyPrices[i - 1]
 
             self.ui.tableWidget.setItem(i, 0, QTableWidgetItem((str(round(self.simplino.buyPrices[i - 1], 5)))))
