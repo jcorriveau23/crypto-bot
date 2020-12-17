@@ -43,6 +43,7 @@ class TopSimplino(QMainWindow):
         info = self.api.exchange.fetch_balance()
         balances = info['info']['balances']
 
+        balance = 0
         for asset in balances:  # fetch the balance of the pairing asset. Selling side
             if asset['asset'] == self.simplino.sell_asset:
                 balance = float(asset['free'])
@@ -245,7 +246,7 @@ class TopSimplino(QMainWindow):
         self.ui.Order_filled_tab.setItem(0, 4, QTableWidgetItem("Time"))
 
         self.ui.tableWidget.setRowCount(1)
-        self.ui.tableWidget.setColumnCount(4)
+        self.ui.tableWidget.setColumnCount(5)
 
         self.ui.tableWidget.setItem(0, 0, QTableWidgetItem("Buy Price"))
         self.ui.tableWidget.setItem(0, 1, QTableWidgetItem("Buy Qty"))

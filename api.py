@@ -23,12 +23,7 @@ class API:
         })
         self.exchange.load_markets()
 
-    ##
-    #  input:   pair: ex: ETHUSDT (str)
-    #           side: "Buy" or "Sell"
-    #           price:  price value (float)
-    #  return:  ID of the order created
-    #           success or failed
+
     def create_limit_order(self, pair, side, price, qty):
         """
         initiate an order of a specific pairing side and price and qty
@@ -47,7 +42,7 @@ class API:
                                                                 # TODO uses contraints of pairing
                                                                 )
 
-                logger.info('Buy Order Sent => QTY: {} ETH, PRICE: {} USDT/ETH'.format(qty, price))
+                logger.info('Buy Order Sent => QTY: {} ETH, PRICE: {} Pair: {} order ID: {}'.format(qty, price, pair, order_id['info']['orderId']))
                 return True, order_id['info']['orderId']
             except Exception as e:
                 logger.error('Buy Order could not be send! Exception: {}'.format(e))
@@ -60,7 +55,7 @@ class API:
                                                                  # TODO uses contraints of pairing
                                                                  round(price, 2))  # TODO uses contraints of pairing
 
-                logger.info('Buy Order Sent => QTY: {} ETH, PRICE: {} USDT/ETH'.format(qty, price))
+                logger.info('Sell Order Sent => QTY: {}, PRICE: {} Pair: {} order ID: {}}'.format(qty, price, pair, order_id['info']['orderId']))
                 return True, order_id['info']['orderId']
             except Exception as e:
                 logger.error('Buy Order could not be send! Exception: {}'.format(e))
@@ -80,14 +75,14 @@ class API:
             order = self.exchange.fetch_order(id=order_id, symbol=pair)
             print(order)
             if order["info"]["status"] == "FILLED":
-                logger.info('{} order is filled'.format(order["info"]["side"]))
+                logger.info('{} order is filled, order ID: {}'.format(order["info"]["side"], order_id))
                 return True, order
             else:
                 return False, order
 
         except Exception as e:
-            logging.error("Order info could not be fetch, Exception: {} ".format(e))
-            return False, None, None
+            logging.error("Order {} info could not be fetch, Exception: {} ".format(order_id, e))
+            return False, None
 
     def cancel_order(self, order_id, pair):
         """
