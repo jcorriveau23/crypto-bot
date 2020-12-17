@@ -56,7 +56,7 @@ class API:
         elif side is "Sell":
             try:
                 order_id = self.exchange.create_limit_sell_order(pair,
-                                                                 round(qty, 2),
+                                                                 round(qty, 5),
                                                                  # TODO uses contraints of pairing
                                                                  round(price, 2))  # TODO uses contraints of pairing
 
