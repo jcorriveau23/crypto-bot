@@ -97,20 +97,21 @@ class top(QMainWindow):
                 return
             orderbook = self.api.exchange.fetch_order_book(self.simplino.pair)
             print(self.simplino.buy_order_id, self.simplino.sell_order_id)
-            filled, side, order_info = self.api.order_isfilled(self.simplino.pair,
-                                                               self.simplino.buy_order_id,
-                                                               self.simplino.sell_order_id)
+            buy_filled, buy_order_info = self.api.order_isfilled(self.simplino.pair,
+                                                                 self.simplino.buy_order_id)
+            if self.simplino.sell_order_id is not 0:
+                sell_filled, sell_order_info = self.api.order_isfilled(self.simplino.pair,
+                                                                       self.simplino.sell_order_id)
+            else:
+                sell_filled = False
+                sell_order_info = None
 
-            print(order_info)
+            if buy_filled:
+                self.buy_order_filled(buy_order_info)
+            elif sell_filled:
+                self.sell_order_filled(sell_order_info)
 
-            if filled:
-                if side == "BUY":
-                    print("Filled main")
-                    self.buy_order_filled(order_info)
-                elif side == "SELL":
-                    self.sell_order_filled(order_info)
-
-            self.update_visual(orderbook, filled, order_info)
+            self.update_visual(orderbook, buy_filled, sell_filled, buy_order_info, sell_order_info)
 
             time.sleep(1)  # exchange polling rate
 
@@ -123,7 +124,7 @@ class top(QMainWindow):
 
         fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
 
-        self.invested -= (1 - fee_rate) * qty * price
+        self.simplino.invested -= (1 - fee_rate) * qty * price
 
         if self.simplino.nb_possible_sell > 1:  # a sell order is open?
             self.api.cancel_order(self.simplino.sell_order_id, self.simplino.pair)
@@ -157,7 +158,7 @@ class top(QMainWindow):
         self.simplino.buy_qty -= qty
 
         fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
-        self.invested += (1 - fee_rate) * qty * price
+        self.simplino.invested += (1 - fee_rate) * qty * price
 
         if self.api.cancel_order(self.simplino.buy_order_id, self.simplino.pair):
             self.simplino.nb_possible_sell = self.simplino.nb_buys - self.simplino.nb_sells
@@ -183,10 +184,10 @@ class top(QMainWindow):
         self.ui.tableWidget.setRowCount(len(self.simplino.buyPrices) + 1)
         self.ui.tableWidget.setColumnCount(4)
 
-        self.ui.tableWidget.setItem(0, 0, QTableWidgetItem(("Buy Price")))
-        self.ui.tableWidget.setItem(0, 1, QTableWidgetItem(("Buy Qty")))
-        self.ui.tableWidget.setItem(0, 2, QTableWidgetItem(("Cumulate")))
-        self.ui.tableWidget.setItem(0, 3, QTableWidgetItem(("Sell Price")))
+        self.ui.tableWidget.setItem(0, 0, QTableWidgetItem("Buy Price"))
+        self.ui.tableWidget.setItem(0, 1, QTableWidgetItem("Buy Qty"))
+        self.ui.tableWidget.setItem(0, 2, QTableWidgetItem("Cumulate"))
+        self.ui.tableWidget.setItem(0, 3, QTableWidgetItem("Sell Price"))
         cumulate = 0
 
         for i in range(1, len(self.simplino.buyPrices) + 1):
@@ -213,10 +214,10 @@ class top(QMainWindow):
     def add_filled_order_in_tab(self, order_info):
         row = self.simplino.nb_buys + self.simplino.nb_sells
         self.ui.Order_filled_tab.setRowCount(row)
-        self.ui.Order_filled_tab.setItem(row, 0, QTableWidgetItem((order_info["info"]["orderId"])))
+        self.ui.Order_filled_tab.setItem(row, 0, QTableWidgetItem((str(order_info["info"]["orderId"]))))
         self.ui.Order_filled_tab.setItem(row, 1, QTableWidgetItem((order_info["info"]["side"])))
         self.ui.Order_filled_tab.setItem(row, 2, QTableWidgetItem((order_info["info"]["executedQty"])))
-        self.ui.Order_filled_tab.setItem(row, 3, QTableWidgetItem((order_info["info"]["time"])))
+        self.ui.Order_filled_tab.setItem(row, 3, QTableWidgetItem((str(order_info["info"]["time"]))))
 
     def on_mount(self, api):
         for symbol in api.exchange.markets:
@@ -225,12 +226,20 @@ class top(QMainWindow):
         self.ui.Order_filled_tab.setRowCount(1)
         self.ui.Order_filled_tab.setColumnCount(4)
 
-        self.ui.Order_filled_tab.setItem(0, 0, QTableWidgetItem(("order ID")))
-        self.ui.Order_filled_tab.setItem(0, 1, QTableWidgetItem(("Side")))
-        self.ui.Order_filled_tab.setItem(0, 2, QTableWidgetItem(("Qty")))
-        self.ui.Order_filled_tab.setItem(0, 3, QTableWidgetItem(("Time")))
+        self.ui.Order_filled_tab.setItem(0, 0, QTableWidgetItem("order ID"))
+        self.ui.Order_filled_tab.setItem(0, 1, QTableWidgetItem("Side"))
+        self.ui.Order_filled_tab.setItem(0, 2, QTableWidgetItem("Qty"))
+        self.ui.Order_filled_tab.setItem(0, 3, QTableWidgetItem("Time"))
 
-    def update_visual(self, order_book, filled, orders):
+        self.ui.tableWidget.setRowCount(1)
+        self.ui.tableWidget.setColumnCount(4)
+
+        self.ui.tableWidget.setItem(0, 0, QTableWidgetItem("Buy Price"))
+        self.ui.tableWidget.setItem(0, 1, QTableWidgetItem("Buy Qty"))
+        self.ui.tableWidget.setItem(0, 2, QTableWidgetItem("Cumulate"))
+        self.ui.tableWidget.setItem(0, 3, QTableWidgetItem("Sell Price"))
+
+    def update_visual(self, order_book, buy_filled, sell_filled, buy_order, sell_order):
         print(order_book['bids'][0])
         bid_price = float(order_book['bids'][0][0])
         ask_price = float(order_book['asks'][0][0])
@@ -248,26 +257,26 @@ class top(QMainWindow):
 
         self.ui.gain_label.setText(str(round(sell_profits, 2)))  # TODO get rid of hardcode
 
-        if filled:  # if an order has also filled update simplino data visuals
+        if buy_filled:
+            self.add_filled_order_in_tab(buy_order)
             self.ui.Buy_order_filled_label.setText(str(self.simplino.nb_buys))
-            self.ui.Sell_order_filled_label.setText(str(self.simplino.nb_sells))
             self.ui.Possible_sell.setText(str(self.simplino.nb_possible_sell))
             self.ui.Buy_Qty_label.setText(str(self.simplino.buy_qty))
             self.ui.invested_label.setText(str(self.simplino.invested))
-
             self.ui.Buy_order_ID_label.setText(str(self.simplino.buy_order_id))
+
+        if sell_filled:
+            self.add_filled_order_in_tab(sell_order)
+            self.ui.Sell_order_filled_label.setText(str(self.simplino.nb_sells))
+            self.ui.Possible_sell.setText(str(self.simplino.nb_possible_sell))
             self.ui.Sell_order_ID_label.setText(str(self.simplino.sell_order_id))
-            self.add_filled_order_in_tab(orders)
 
-        else:
-            for order in orders:
-                if order["info"]["orderId"] == self.simplino.buy_order_id:
-                    self.ui.buy_qty_label.setText(order["info"]['origQty'])
-                    self.ui.buy_filled_Qty_label.setText(order["info"]["executedQty"])
+        self.ui.buy_qty_label.setText(buy_order["info"]['origQty'])
+        self.ui.buy_filled_Qty_label.setText(buy_order["info"]["executedQty"])
 
-                if order["info"]["orderId"] == self.simplino.sell_order_id:
-                    self.ui.sell_qty_label.setText(order["info"]['origQty'])
-                    self.ui.sell_filled_Qty_label.setText(order["info"]["executedQty"])
+        if sell_order is not None:
+            self.ui.sell_qty_label.setText(sell_order["info"]['origQty'])
+            self.ui.sell_filled_Qty_label.setText(sell_order["info"]["executedQty"])
 
 
 if __name__ == "__main__":
