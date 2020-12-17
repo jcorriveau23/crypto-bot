@@ -8,9 +8,10 @@ from Algos import Simplino
 
 from ui_main import Ui_MainWindow
 
-MAKER_REFERAL_DISCONT = 0.6
+MAKER_REFERAL_DISCOUNT = 0.6
 
-class top(QMainWindow):
+
+class TopSimplino(QMainWindow):
     def __init__(self, parent=None):
         super().__init__()
 
@@ -96,6 +97,7 @@ class top(QMainWindow):
         while True:
             if self.thread_simplino_kill:
                 return
+
             orderbook = self.api.exchange.fetch_order_book(self.simplino.pair)
             print(self.simplino.buy_order_id, self.simplino.sell_order_id)
             buy_filled, buy_order_info = self.api.order_isfilled(self.simplino.pair,
@@ -125,7 +127,7 @@ class top(QMainWindow):
 
         fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
 
-        self.simplino.invested -= (1 + (fee_rate*MAKER_REFERAL_DISCONT)) * qty * price
+        self.simplino.invested -= (1 + (fee_rate * MAKER_REFERAL_DISCOUNT)) * qty * price
 
         if self.simplino.nb_possible_sell > 1:  # a sell order is open?
             self.api.cancel_order(self.simplino.sell_order_id, self.simplino.pair)
@@ -159,7 +161,7 @@ class top(QMainWindow):
         self.simplino.buy_qty -= qty
 
         fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
-        self.simplino.invested += (1 - (fee_rate*MAKER_REFERAL_DISCONT)) * qty * price
+        self.simplino.invested += (1 - (fee_rate * MAKER_REFERAL_DISCOUNT)) * qty * price
 
         if self.api.cancel_order(self.simplino.buy_order_id, self.simplino.pair):
             self.simplino.nb_possible_sell = self.simplino.nb_buys - self.simplino.nb_sells
@@ -218,19 +220,21 @@ class top(QMainWindow):
         self.ui.Order_filled_tab.setItem(row, 0, QTableWidgetItem((str(order_info["info"]["orderId"]))))
         self.ui.Order_filled_tab.setItem(row, 1, QTableWidgetItem((order_info["info"]["side"])))
         self.ui.Order_filled_tab.setItem(row, 2, QTableWidgetItem((order_info["info"]["executedQty"])))
-        self.ui.Order_filled_tab.setItem(row, 3, QTableWidgetItem((str(order_info["info"]["time"]))))
+        self.ui.Order_filled_tab.setItem(row, 3, QTableWidgetItem((order_info["info"]["price"])))
+        self.ui.Order_filled_tab.setItem(row, 4, QTableWidgetItem((str(order_info["info"]["time"]))))
 
     def on_mount(self, api):
         for symbol in api.exchange.markets:
             self.ui.pair_comboBox.addItem(symbol)
 
         self.ui.Order_filled_tab.setRowCount(1)
-        self.ui.Order_filled_tab.setColumnCount(4)
+        self.ui.Order_filled_tab.setColumnCount(5)
 
-        self.ui.Order_filled_tab.setItem(0, 0, QTableWidgetItem("order ID"))
+        self.ui.Order_filled_tab.setItem(0, 0, QTableWidgetItem("Order ID"))
         self.ui.Order_filled_tab.setItem(0, 1, QTableWidgetItem("Side"))
         self.ui.Order_filled_tab.setItem(0, 2, QTableWidgetItem("Qty"))
-        self.ui.Order_filled_tab.setItem(0, 3, QTableWidgetItem("Time"))
+        self.ui.Order_filled_tab.setItem(0, 3, QTableWidgetItem("Price"))
+        self.ui.Order_filled_tab.setItem(0, 4, QTableWidgetItem("Time"))
 
         self.ui.tableWidget.setRowCount(1)
         self.ui.tableWidget.setColumnCount(4)
@@ -253,7 +257,8 @@ class top(QMainWindow):
 
         # calculate profit if selling all at bid price (to be sure that its get filled)
         fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
-        sell_profits = self.simplino.invested + (1 - fee_rate*MAKER_REFERAL_DISCONT) * bid_price * self.simplino.buy_qty
+        sell_profits = self.simplino.invested + (
+                    1 - fee_rate * MAKER_REFERAL_DISCOUNT) * bid_price * self.simplino.buy_qty
 
         self.ui.gain_label.setText(str(round(sell_profits, 2)))  # TODO get rid of hardcode
 
@@ -282,7 +287,7 @@ class top(QMainWindow):
 if __name__ == "__main__":
     app = QApplication([])
 
-    top = top()
+    top = TopSimplino()
     top.show()
 
     app.exec_()
