@@ -161,6 +161,7 @@ class TopSimplino(QMainWindow):
         self.simplino.buy_qty -= qty
 
         fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
+
         self.simplino.invested += (1 - (fee_rate * MAKER_REFERAL_DISCOUNT)) * qty * price
 
         if self.api.cancel_order(self.simplino.buy_order_id, self.simplino.pair):
@@ -181,6 +182,8 @@ class TopSimplino(QMainWindow):
                                                                                    "Sell",
                                                                                    sell_price,
                                                                                    sell_qty)
+            else:
+                self.simplino.sell_order_id = 0  # NULL order ID so don't get fill checked
 
     def create_table(self):
         self.ui.tableWidget.clear()
@@ -190,15 +193,20 @@ class TopSimplino(QMainWindow):
         self.ui.tableWidget.setItem(0, 0, QTableWidgetItem("Buy Price"))
         self.ui.tableWidget.setItem(0, 1, QTableWidgetItem("Buy Qty"))
         self.ui.tableWidget.setItem(0, 2, QTableWidgetItem("Cumulate"))
-        self.ui.tableWidget.setItem(0, 3, QTableWidgetItem("Sell Price"))
+        self.ui.tableWidget.setItem(0, 3, QTableWidgetItem("Cumulative max"))
+        self.ui.tableWidget.setItem(0, 4, QTableWidgetItem("Sell Price"))
         cumulate = 0
+        cumulate_max = 0
 
         for i in range(1, len(self.simplino.buyPrices) + 1):
+            cumulate_max += i*self.simplino.buy_qtys[i - 1] * self.simplino.buyPrices[i - 1]
             cumulate += self.simplino.buy_qtys[i - 1] * self.simplino.buyPrices[i - 1]
+
             self.ui.tableWidget.setItem(i, 0, QTableWidgetItem((str(round(self.simplino.buyPrices[i - 1], 5)))))
             self.ui.tableWidget.setItem(i, 1, QTableWidgetItem((str(round(self.simplino.buy_qtys[i - 1], 5)))))
             self.ui.tableWidget.setItem(i, 2, QTableWidgetItem((str(round(cumulate, 5)))))
-            self.ui.tableWidget.setItem(i, 3, QTableWidgetItem((str(round(self.simplino.sell_prices[i - 1], 5)))))
+            self.ui.tableWidget.setItem(i, 3, QTableWidgetItem((str(round(cumulate_max, 5)))))
+            self.ui.tableWidget.setItem(i, 4, QTableWidgetItem((str(round(self.simplino.sell_prices[i - 1], 5)))))
 
     def set_pair_label(self):
         self.ui.price_pairing_label.setText(self.simplino.sell_asset)
@@ -241,8 +249,9 @@ class TopSimplino(QMainWindow):
 
         self.ui.tableWidget.setItem(0, 0, QTableWidgetItem("Buy Price"))
         self.ui.tableWidget.setItem(0, 1, QTableWidgetItem("Buy Qty"))
-        self.ui.tableWidget.setItem(0, 2, QTableWidgetItem("Cumulate"))
-        self.ui.tableWidget.setItem(0, 3, QTableWidgetItem("Sell Price"))
+        self.ui.tableWidget.setItem(0, 2, QTableWidgetItem("Cumulative"))
+        self.ui.tableWidget.setItem(0, 3, QTableWidgetItem("Cumulative max"))
+        self.ui.tableWidget.setItem(0, 4, QTableWidgetItem("Sell Price"))
 
     def update_visual(self, order_book, buy_filled, sell_filled, buy_order, sell_order):
         print(order_book['bids'][0])
@@ -258,7 +267,7 @@ class TopSimplino(QMainWindow):
         # calculate profit if selling all at bid price (to be sure that its get filled)
         fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
         sell_profits = self.simplino.invested + (
-                    1 - fee_rate * MAKER_REFERAL_DISCOUNT) * bid_price * self.simplino.buy_qty
+                1 - fee_rate * MAKER_REFERAL_DISCOUNT) * bid_price * self.simplino.buy_qty
 
         self.ui.gain_label.setText(str(round(sell_profits, 2)))  # TODO get rid of hardcode
 

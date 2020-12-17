@@ -99,7 +99,7 @@ class API:
         """
         try:
             self.exchange.cancel_order(order_id, pair)
-            logger.info('Sell Order canceled')
+            logger.info('Order canceled: ID: {}'.format(order_id))
             return True
         except Exception as e:
             logger.error(
