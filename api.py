@@ -68,38 +68,6 @@ class API:
         else:
             return False, None
 
-    # def order_isfilled(self, pair, buy_order_id, sell_order_id):
-    #     """
-    #     Validate if that buy and sell order is  fill
-    #
-    #     :param pair:
-    #     :param buy_order_id:
-    #     :param sell_order_id:
-    #     :return:
-    #     """
-    #     try:
-    #         orders = self.exchange.fetch_orders(symbol=pair)
-    #         print(orders)
-    #         for order in orders:
-    #             print(order)
-    #             if order["info"]["orderId"] == buy_order_id:
-    #                 if order["info"]["status"] == "FILLED":
-    #                     logger.info('Buy order is filled')
-    #                     return True, "BUY", order
-    #                 else:
-    #                     pass  # TODO other cases
-    #
-    #             elif order["info"]["orderId"] == sell_order_id:
-    #                 if order["info"]["status"] == "FILLED":
-    #                     logger.info('Sell order is filled')
-    #                     return True, "SELL", order
-    #                 else:
-    #                     pass  # TODO other cases
-    #         return False, None, orders
-    #     except Exception as e:
-    #         logging.error("Order info could not be fetch, Exception: {} ".format(e))
-    #         return False, None, None
-
     def order_isfilled(self, pair, order_id):
         """
         Validate if that buy and sell order is  fill
