@@ -275,8 +275,8 @@ class TopSimplino(QMainWindow):
             self.add_filled_order_in_tab(buy_order)
             self.ui.Buy_order_filled_label.setText(str(self.simplino.nb_buys))
             self.ui.Possible_sell.setText(str(self.simplino.nb_possible_sell))
-            self.ui.Buy_Qty_label.setText(str(self.simplino.buy_qty))
-            self.ui.invested_label.setText(str(self.simplino.invested))
+            self.ui.Buy_Qty_label.setText(str(round(self.simplino.buy_qty, 2)))
+            self.ui.invested_label.setText(str(round(self.simplino.invested, 2)))
             self.ui.Buy_order_ID_label.setText(str(self.simplino.buy_order_id))
 
         if sell_filled:
