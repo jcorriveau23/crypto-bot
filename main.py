@@ -8,6 +8,7 @@ from Algos import Simplino
 
 from ui_main import Ui_MainWindow
 
+MAKER_REFERAL_DISCONT = 0.6
 
 class top(QMainWindow):
     def __init__(self, parent=None):
@@ -124,7 +125,7 @@ class top(QMainWindow):
 
         fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
 
-        self.simplino.invested -= (1 - fee_rate) * qty * price
+        self.simplino.invested -= (1 + (fee_rate*MAKER_REFERAL_DISCONT)) * qty * price
 
         if self.simplino.nb_possible_sell > 1:  # a sell order is open?
             self.api.cancel_order(self.simplino.sell_order_id, self.simplino.pair)
@@ -158,7 +159,7 @@ class top(QMainWindow):
         self.simplino.buy_qty -= qty
 
         fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
-        self.simplino.invested += (1 - fee_rate) * qty * price
+        self.simplino.invested += (1 - (fee_rate*MAKER_REFERAL_DISCONT)) * qty * price
 
         if self.api.cancel_order(self.simplino.buy_order_id, self.simplino.pair):
             self.simplino.nb_possible_sell = self.simplino.nb_buys - self.simplino.nb_sells
@@ -213,7 +214,7 @@ class top(QMainWindow):
 
     def add_filled_order_in_tab(self, order_info):
         row = self.simplino.nb_buys + self.simplino.nb_sells
-        self.ui.Order_filled_tab.setRowCount(row)
+        self.ui.Order_filled_tab.setRowCount(row + 1)
         self.ui.Order_filled_tab.setItem(row, 0, QTableWidgetItem((str(order_info["info"]["orderId"]))))
         self.ui.Order_filled_tab.setItem(row, 1, QTableWidgetItem((order_info["info"]["side"])))
         self.ui.Order_filled_tab.setItem(row, 2, QTableWidgetItem((order_info["info"]["executedQty"])))
@@ -252,8 +253,7 @@ class top(QMainWindow):
 
         # calculate profit if selling all at bid price (to be sure that its get filled)
         fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
-        print(fee_rate)  # TODO validate that fee rate printed are good for calculation next line
-        sell_profits = self.simplino.invested + (fee_rate * bid_price) * self.simplino.buy_qty
+        sell_profits = self.simplino.invested + (1 - fee_rate*MAKER_REFERAL_DISCONT) * bid_price * self.simplino.buy_qty
 
         self.ui.gain_label.setText(str(round(sell_profits, 2)))  # TODO get rid of hardcode
 
