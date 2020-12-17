@@ -130,7 +130,7 @@ class API:
         :return:
         """
         try:
-            self.exchange.cancel_order(symbol=pair, orderId=order_id)
+            self.exchange.cancel_order(order_id, pair)
             logger.info('Sell Order canceled')
             return True
         except Exception as e:
