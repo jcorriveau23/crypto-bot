@@ -234,6 +234,7 @@ class TopSimplino(QMainWindow):
         generate simplino calculation table
         :return:
         '''
+        self.ui.start_price_label.setText(str(round(self.simplino.start_price, 2))) # TODO get rid of hardcode
         self.ui.tableWidget.clear()
         self.ui.tableWidget.setRowCount(len(self.simplino.buyPrices) + 1)
         self.ui.tableWidget.setColumnCount(5)

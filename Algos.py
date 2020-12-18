@@ -22,6 +22,7 @@ class Simplino():
 
         self.buy_order_id = 0
         self.sell_order_id = 0
+        self.start_price = 0
 
         self.ready = False
 
@@ -29,7 +30,7 @@ class Simplino():
         self.buyPrices = []
         self.sell_prices = []
         self.buy_qtys = []
-
+        self.start_price = start_price
         self.nb_buy_depth = buys_nb_depth
 
         lowest_price = start_price * (1 - loss_depth)
