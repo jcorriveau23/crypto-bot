@@ -358,8 +358,9 @@ class TopSimplino(QMainWindow):
             self.ui.Buy_Qty_label.setText(str(round(self.simplino.buy_qty, 5)))  # TODO get rid of hardcode
             self.ui.invested_label.setText(str(round(self.simplino.invested, 2)))  # TODO get rid of hardcode
 
-        self.ui.buy_qty_label.setText(buy_order["info"]['origQty'])
-        self.ui.buy_filled_Qty_label.setText(buy_order["info"]["executedQty"])
+        if buy_order is not None:
+            self.ui.buy_qty_label.setText(buy_order["info"]['origQty'])
+            self.ui.buy_filled_Qty_label.setText(buy_order["info"]["executedQty"])
 
         if sell_order is not None:
             self.ui.sell_qty_label.setText(sell_order["info"]['origQty'])
