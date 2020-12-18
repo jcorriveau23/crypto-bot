@@ -55,7 +55,7 @@ class API:
                                                                  # TODO uses contraints of pairing
                                                                  round(price, 2))  # TODO uses contraints of pairing
 
-                logger.info('Sell Order Sent => QTY: {}, PRICE: {} Pair: {} order ID: {}}'.format(qty, price, pair, order_id['info']['orderId']))
+                logger.info('Sell Order Sent => QTY: {}, PRICE: {} Pair: {} order ID: {}'.format(qty, price, pair, order_id['info']['orderId']))
                 return True, order_id['info']['orderId']
             except Exception as e:
                 logger.error('Buy Order could not be send! Exception: {}'.format(e))
