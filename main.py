@@ -342,21 +342,21 @@ class TopSimplino(QMainWindow):
 
         self.ui.gain_label.setText(str(round(sell_profits, 2)))  # TODO get rid of hardcode
 
-        if buy_filled:
-            self.add_filled_order_in_tab(buy_order)
+        if buy_filled or sell_filled:
+
             self.ui.Buy_order_filled_label.setText(str(self.simplino.nb_buys))
+            self.ui.Sell_order_filled_label.setText(str(self.simplino.nb_sells))
             self.ui.Possible_sell.setText(str(self.simplino.nb_possible_sell))
+
             self.ui.Buy_Qty_label.setText(str(round(self.simplino.buy_qty, 5)))  # TODO get rid of hardcode
             self.ui.invested_label.setText(str(round(self.simplino.invested, 2)))  # TODO get rid of hardcode
             self.ui.Buy_order_ID_label.setText(str(self.simplino.buy_order_id))
-
-        if sell_filled:
-            self.add_filled_order_in_tab(sell_order)
-            self.ui.Sell_order_filled_label.setText(str(self.simplino.nb_sells))
-            self.ui.Possible_sell.setText(str(self.simplino.nb_possible_sell))
             self.ui.Sell_order_ID_label.setText(str(self.simplino.sell_order_id))
-            self.ui.Buy_Qty_label.setText(str(round(self.simplino.buy_qty, 5)))  # TODO get rid of hardcode
-            self.ui.invested_label.setText(str(round(self.simplino.invested, 2)))  # TODO get rid of hardcode
+
+            if sell_filled:
+                self.add_filled_order_in_tab(sell_order)
+            if buy_filled:
+                self.add_filled_order_in_tab(buy_order)
 
         if buy_order is not None:
             self.ui.buy_qty_label.setText(buy_order["info"]['origQty'])
