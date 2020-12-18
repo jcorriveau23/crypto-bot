@@ -56,11 +56,15 @@ class TopSimplino(QMainWindow):
     def btn_start(self):
         if self.simplino.ready:  # if buy and sell price ready
             if not self.running:
-
-                success, self.simplino.buy_order_id = self.api.create_limit_order(self.simplino.pair,
+                
+                if self.simplino.buy_order_id == 0:
+                    success, self.simplino.buy_order_id = self.api.create_limit_order(self.simplino.pair,
                                                                                   "Buy",
                                                                                   self.simplino.buyPrices[0],
                                                                                   self.simplino.buy_qtys[0])
+                else:# restart the previous run
+                    logging.info("Restart the previous run")
+                    success = True
 
                 if success:
                     print("Simplino start")
