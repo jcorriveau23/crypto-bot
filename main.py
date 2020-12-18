@@ -100,7 +100,7 @@ class TopSimplino(QMainWindow):
                 return
 
             orderbook = self.api.exchange.fetch_order_book(self.simplino.pair)
-            print(self.simplino.buy_order_id, self.simplino.sell_order_id)
+
             buy_filled, buy_order_info = self.api.order_isfilled(self.simplino.pair,
                                                                  self.simplino.buy_order_id)
             if self.simplino.sell_order_id is not 0:
@@ -285,6 +285,8 @@ class TopSimplino(QMainWindow):
             self.ui.Sell_order_filled_label.setText(str(self.simplino.nb_sells))
             self.ui.Possible_sell.setText(str(self.simplino.nb_possible_sell))
             self.ui.Sell_order_ID_label.setText(str(self.simplino.sell_order_id))
+            self.ui.Buy_Qty_label.setText(str(round(self.simplino.buy_qty, 5)))  # TODO get rid of hardcode
+            self.ui.invested_label.setText(str(round(self.simplino.invested, 2)))  # TODO get rid of hardcode
 
         self.ui.buy_qty_label.setText(buy_order["info"]['origQty'])
         self.ui.buy_filled_Qty_label.setText(buy_order["info"]["executedQty"])
