@@ -362,10 +362,12 @@ class TopSimplino(QMainWindow):
         if buy_order is not None:
             self.ui.buy_qty_label.setText(buy_order["info"]['origQty'])
             self.ui.buy_filled_Qty_label.setText(buy_order["info"]["executedQty"])
+            self.ui.buy_order_price_label.setText(buy_order["info"]["price"])
 
         if sell_order is not None:
             self.ui.sell_qty_label.setText(sell_order["info"]['origQty'])
             self.ui.sell_filled_Qty_label.setText(sell_order["info"]["executedQty"])
+            self.ui.sell_order_price_label.setText(sell_order["info"]["price"])
 
 
 if __name__ == "__main__":
