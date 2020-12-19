@@ -10,7 +10,7 @@ from Algos import Simplino
 
 from ui_main import Ui_MainWindow
 
-MAKER_REFERAL_DISCOUNT = 0.6
+MAKER_REFERRAL_DISCOUNT = 0.6
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -164,7 +164,7 @@ class TopSimplino(QMainWindow):
 
         fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
 
-        self.simplino.invested -= (1 + (fee_rate * MAKER_REFERAL_DISCOUNT)) * qty * price
+        self.simplino.invested -= (1 + (fee_rate * MAKER_REFERRAL_DISCOUNT)) * qty * price
 
         if self.simplino.nb_possible_sell > 1:  # a sell order is open?
             self.api.cancel_order(self.simplino.sell_order_id, self.simplino.pair)
@@ -206,7 +206,7 @@ class TopSimplino(QMainWindow):
 
         fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
 
-        self.simplino.invested += (1 - (fee_rate * MAKER_REFERAL_DISCOUNT)) * qty * price
+        self.simplino.invested += (1 - (fee_rate * MAKER_REFERRAL_DISCOUNT)) * qty * price
 
         if self.api.cancel_order(self.simplino.buy_order_id, self.simplino.pair):
             self.simplino.nb_possible_sell = self.simplino.nb_buys - self.simplino.nb_sells
@@ -350,7 +350,7 @@ class TopSimplino(QMainWindow):
         # calculate profit if selling all at bid price (to be sure that its get filled)
         fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
         sell_profits = self.simplino.invested + (
-                1 - fee_rate * MAKER_REFERAL_DISCOUNT) * bid_price * self.simplino.buy_qty
+                1 - fee_rate * MAKER_REFERRAL_DISCOUNT) * bid_price * self.simplino.buy_qty
 
         self.ui.gain_label.setText(str(round(sell_profits, price_precision)))
 
@@ -417,6 +417,13 @@ class TopSimplino(QMainWindow):
             self.ui.tableWidget.item(possible_sell + 1, 0).setBackground(QColor(0, 180, 0))  # New
             self.ui.tableWidget.item(possible_sell + 1, 1).setBackground(QColor(0, 180, 0))
             self.ui.tableWidget.item(possible_sell, 4).setBackground(QColor(180, 0, 0))
+
+        elif possible_sell == self.simplino.nb_buy_depth:
+            self.ui.tableWidget.item(possible_sell, 0).setBackground(QColor(255, 255, 255))  # Last
+            self.ui.tableWidget.item(possible_sell, 1).setBackground(QColor(255, 255, 255))
+            self.ui.tableWidget.item(possible_sell - 1, 4).setBackground(QColor(255, 255, 255))
+
+            self.ui.tableWidget.item(possible_sell, 4).setBackground(QColor(180, 0, 0))  # New
 
         else:
             if buy_filled:
