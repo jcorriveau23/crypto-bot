@@ -131,23 +131,24 @@ class TopSimplino(QMainWindow):
             if self.thread_simplino_kill:
                 return
 
-            order_book = self.api.exchange.fetch_order_book(self.simplino.pair)
+            success, order_book = self.api.get_order_book(self.simplino.pair)
 
-            buy_filled, buy_order_info = self.api.order_isfilled(self.simplino.pair,
-                                                                 self.simplino.buy_order_id)
-            if self.simplino.sell_order_id is not 0:
-                sell_filled, sell_order_info = self.api.order_isfilled(self.simplino.pair,
-                                                                       self.simplino.sell_order_id)
-            else:
-                sell_filled = False
-                sell_order_info = None
+            if success:
+                buy_filled, buy_order_info = self.api.order_isfilled(self.simplino.pair,
+                                                                     self.simplino.buy_order_id)
+                if self.simplino.sell_order_id is not 0:
+                    sell_filled, sell_order_info = self.api.order_isfilled(self.simplino.pair,
+                                                                           self.simplino.sell_order_id)
+                else:
+                    sell_filled = False
+                    sell_order_info = None
 
-            if buy_filled:
-                self.buy_order_filled(buy_order_info)
-            elif sell_filled:
-                self.sell_order_filled(sell_order_info)
+                if buy_filled:
+                    self.buy_order_filled(buy_order_info)
+                elif sell_filled:
+                    self.sell_order_filled(sell_order_info)
 
-            self.update_visual(order_book, buy_filled, sell_filled, buy_order_info, sell_order_info)
+                self.update_visual(order_book, buy_filled, sell_filled, buy_order_info, sell_order_info)
 
             time.sleep(1)  # exchange polling rate
 

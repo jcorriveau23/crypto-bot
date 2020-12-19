@@ -23,7 +23,6 @@ class API:
         })
         self.exchange.load_markets()
 
-
     def create_limit_order(self, pair, side, price, qty):
         """
         initiate an order of a specific pairing side and price and qty
@@ -42,7 +41,9 @@ class API:
                                                                 # TODO uses contraints of pairing
                                                                 )
 
-                logger.info('Buy Order Sent => QTY: {} ETH, PRICE: {} Pair: {} order ID: {}'.format(qty, price, pair, order_id['info']['orderId']))
+                logger.info('Buy Order Sent => QTY: {} ETH, PRICE: {} Pair: {} order ID: {}'.format(qty, price, pair,
+                                                                                                    order_id['info'][
+                                                                                                        'orderId']))
                 return True, order_id['info']['orderId']
             except Exception as e:
                 logger.error('Buy Order could not be send! Exception: {}'.format(e))
@@ -55,7 +56,9 @@ class API:
                                                                  # TODO uses contraints of pairing
                                                                  round(price, 2))  # TODO uses contraints of pairing
 
-                logger.info('Sell Order Sent => QTY: {}, PRICE: {} Pair: {} order ID: {}'.format(qty, price, pair, order_id['info']['orderId']))
+                logger.info('Sell Order Sent => QTY: {}, PRICE: {} Pair: {} order ID: {}'.format(qty, price, pair,
+                                                                                                 order_id['info'][
+                                                                                                     'orderId']))
                 return True, order_id['info']['orderId']
             except Exception as e:
                 logger.error('Buy Order could not be send! Exception: {}'.format(e))
@@ -100,3 +103,11 @@ class API:
             logger.error(
                 "Buy Order Cancel has not worked: Pair: {}, OrderId: {}, Exception: {} ".format(pair, order_id, e))
             return False
+
+    def get_order_book(self, pair):
+        try:
+            return True, self.exchange.fetch_order_book(self.simplino.pair)
+
+        except Exception as e:
+            logger.error("Order book could not be fetched, pair: {}, Exception: {}".format(pair, e))
+            return False, None
