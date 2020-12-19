@@ -111,3 +111,20 @@ class API:
         except Exception as e:
             logger.error("Order book could not be fetched, pair: {}, Exception: {}".format(pair, e))
             return False, None
+
+    def get_asset_balance(self, sell_asset):
+        try:
+            info = self.exchange.fetch_balance()
+            balances = info['info']['balances']
+            print(balances, sell_asset)
+
+            for asset in balances:  # fetch the balance of the pairing asset. Selling side
+                if asset['asset'] == sell_asset:
+                    balance = float(asset['free'])
+                    print("caca")
+                    return True, balance
+            return False, 0
+
+        except Exception as e:
+            logger.error("Balance could not be fetch, asset: {}, Exception: {}".format(sell_asset, e))
+            return False, 0

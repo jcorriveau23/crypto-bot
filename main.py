@@ -53,18 +53,15 @@ class TopSimplino(QMainWindow):
 
         self.simplino = Simplino(pair)
 
-        info = self.api.exchange.fetch_balance()
-        balances = info['info']['balances']
+        success, balance = self.api.get_asset_balance(self.simplino.sell_asset)
 
-        balance = 0
-        for asset in balances:  # fetch the balance of the pairing asset. Selling side
-            if asset['asset'] == self.simplino.sell_asset:
-                balance = float(asset['free'])
+        if success:
+            self.simplino.simplino_algo_create_buys(balance, start_price, drop_percent / 100, nb_buy, more_percent)
 
-        self.simplino.simplino_algo_create_buys(balance, start_price, drop_percent / 100, nb_buy, more_percent)
-
-        self.create_table()
-        self.set_pair_label()
+            self.create_table()
+            self.set_pair_label()
+        else:
+            return
 
     def btn_start(self):
         '''
