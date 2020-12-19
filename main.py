@@ -40,10 +40,10 @@ class TopSimplino(QMainWindow):
         self.running = False
 
     def btn_calculate_simplino(self):
-        '''
+        """
         Button trigger the calculation of Simplino buy sell prevision and store it in the ui tab
         :return:
-        '''
+        """
 
         start_price = float(self.ui.start_price_text_input.text())
         nb_buy = int(self.ui.nb_buy_text_input.text())
@@ -64,11 +64,11 @@ class TopSimplino(QMainWindow):
             return
 
     def btn_start(self):
-        '''
+        """
         Button that start the thread for simplino strategy
         You can restart a previous stopped run
         :return:
-        '''
+        """
         if self.simplino.ready:  # if buy and sell price ready
             if not self.running:
 
@@ -106,10 +106,10 @@ class TopSimplino(QMainWindow):
             return False
 
     def btn_stop(self):
-        '''
+        """
         kill the simplino thread strategy
         :return:
-        '''
+        """
         if self.running:
             self.thread_simplino_kill = True
             self.thread_simplino.join()
@@ -120,10 +120,10 @@ class TopSimplino(QMainWindow):
             logger.info("Simplino is not running")
 
     def main_simplino(self):
-        '''
+        """
         main loop of the simplino strategy. This loop is run in its own thread
         :return:
-        '''
+        """
         while True:
             if self.thread_simplino_kill:
                 return
@@ -150,12 +150,12 @@ class TopSimplino(QMainWindow):
             time.sleep(1)  # exchange polling rate
 
     def buy_order_filled(self, order_info):
-        '''
+        """
         call when a buy order is filled, cancel current sell order and resend a buy + sell order depending on
         the context
         :param order_info: JSON from api that contain the filled order info
         :return:
-        '''
+        """
         self.simplino.nb_buys += 1
         qty = float(order_info["info"]["executedQty"])
         price = float(order_info["info"]["price"])
@@ -194,11 +194,11 @@ class TopSimplino(QMainWindow):
         # TODO use the success to retrigger another try if not success
 
     def sell_order_filled(self, order_info):
-        '''
+        """
         call when a sell order is filled, cancel current buy order and resend buy + sell order depending on the context
         :param order_info: JSON from api that contain the filled order info
         :return:
-        '''
+        """
         self.simplino.nb_sells += 1
         qty = float(order_info["info"]["executedQty"])
         price = float(order_info["info"]["price"])
@@ -232,11 +232,14 @@ class TopSimplino(QMainWindow):
                 self.simplino.sell_order_id = 0  # NULL order ID so don't get fill checked
 
     def create_table(self):
-        '''
+        """
         generate simplino calculation table
         :return:
-        '''
-        self.ui.start_price_label.setText(str(round(self.simplino.start_price, 2)))  # TODO get rid of hardcode
+        """
+        qty_precision = self.api.exchange.markets[self.simplino.pair]['precision']['price']
+        price_precision = self.api.exchange.markets[self.simplino.pair]['precision']['amount']
+
+        self.ui.start_price_label.setText(str(round(self.simplino.start_price, price_precision)))
         self.ui.tableWidget.clear()
         self.ui.tableWidget.setRowCount(len(self.simplino.buyPrices) + 1)
         self.ui.tableWidget.setColumnCount(5)
@@ -258,17 +261,20 @@ class TopSimplino(QMainWindow):
             cumulative_max = i * self.simplino.buy_qtys[i - 1] * self.simplino.buyPrices[i - 1]
             cumulative += self.simplino.buy_qtys[i - 1] * self.simplino.buyPrices[i - 1]
 
-            self.ui.tableWidget.setItem(i, 0, QTableWidgetItem((str(round(self.simplino.buyPrices[i - 1], 5)))))
-            self.ui.tableWidget.setItem(i, 1, QTableWidgetItem((str(round(self.simplino.buy_qtys[i - 1], 5)))))
-            self.ui.tableWidget.setItem(i, 2, QTableWidgetItem((str(round(cumulative, 5)))))
-            self.ui.tableWidget.setItem(i, 3, QTableWidgetItem((str(round(cumulative_max, 5)))))
-            self.ui.tableWidget.setItem(i, 4, QTableWidgetItem((str(round(self.simplino.sell_prices[i - 1], 5)))))
+            self.ui.tableWidget.setItem(i, 0, QTableWidgetItem((str(round(self.simplino.buyPrices[i - 1],
+                                                                          price_precision)))))
+            self.ui.tableWidget.setItem(i, 1, QTableWidgetItem((str(round(self.simplino.buy_qtys[i - 1],
+                                                                          qty_precision)))))
+            self.ui.tableWidget.setItem(i, 2, QTableWidgetItem((str(round(cumulative, price_precision)))))
+            self.ui.tableWidget.setItem(i, 3, QTableWidgetItem((str(round(cumulative_max, price_precision)))))
+            self.ui.tableWidget.setItem(i, 4, QTableWidgetItem((str(round(self.simplino.sell_prices[i - 1],
+                                                                          price_precision)))))
 
     def set_pair_label(self):
-        '''
+        """
         Set pair label depending on the paring chosen
         :return:
-        '''
+        """
         self.ui.price_pairing_label.setText(self.simplino.sell_asset)
         self.ui.price_pairing_label_2.setText(self.simplino.sell_asset)
         self.ui.price_pairing_label_3.setText(self.simplino.sell_asset)
@@ -283,11 +289,11 @@ class TopSimplino(QMainWindow):
         self.ui.Buy_asset_label_5.setText(self.simplino.buy_asset)
 
     def add_filled_order_in_tab(self, order_info):
-        '''
+        """
         Add the information of a filled order in the order filled ui tab
         :param order_info:
         :return:
-        '''
+        """
         row = self.simplino.nb_buys + self.simplino.nb_sells
         self.ui.Order_filled_tab.setRowCount(row + 1)
         self.ui.Order_filled_tab.setItem(row, 0, QTableWidgetItem((str(order_info["info"]["orderId"]))))
@@ -297,11 +303,11 @@ class TopSimplino(QMainWindow):
         self.ui.Order_filled_tab.setItem(row, 4, QTableWidgetItem((str(order_info["info"]["time"]))))
 
     def on_mount(self, api):
-        '''
+        """
         Call when app started, set tab title and combo box available pairs
         :param api:
         :return:
-        '''
+        """
         for symbol in api.exchange.markets:
             self.ui.pair_comboBox.addItem(symbol)
 
@@ -320,7 +326,7 @@ class TopSimplino(QMainWindow):
         self.ui.Order_filled_tab.item(0, 4).setBackground(QColor(200, 200, 200))
 
     def update_visual(self, order_book, buy_filled, sell_filled, buy_order, sell_order):
-        '''
+        """
         general real time visual update functions. Called every period of filled order check.
         :param order_book: JSON from API of bid and ask price
         :param buy_filled: bool that tells us if the buy order is filled
@@ -328,23 +334,25 @@ class TopSimplino(QMainWindow):
         :param buy_order: JSON from API of buy order information
         :param sell_order: JSON from API of sell order information
         :return:
-        '''
+        """
+        qty_precision = self.api.exchange.markets[self.simplino.pair]['precision']['price']
+        price_precision = self.api.exchange.markets[self.simplino.pair]['precision']['amount']
 
         bid_price = float(order_book['bids'][0][0])
         ask_price = float(order_book['asks'][0][0])
         # we assume that price equal mean between bids and ask price (dont need to call the api again)
         current_price = (bid_price + ask_price) / 2
 
-        self.ui.price_label.setText(str(round(current_price, 2)))  # TODO get rid of hardcode
-        self.ui.ask_price_label.setText(str(round(ask_price, 2)))  # TODO get rid of hardcode
-        self.ui.bid_price_label.setText(str(round(bid_price, 2)))  # TODO get rid of hardcode
+        self.ui.price_label.setText(str(round(current_price, price_precision)))
+        self.ui.ask_price_label.setText(str(round(ask_price, price_precision)))
+        self.ui.bid_price_label.setText(str(round(bid_price, price_precision)))
 
         # calculate profit if selling all at bid price (to be sure that its get filled)
         fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
         sell_profits = self.simplino.invested + (
                 1 - fee_rate * MAKER_REFERAL_DISCOUNT) * bid_price * self.simplino.buy_qty
 
-        self.ui.gain_label.setText(str(round(sell_profits, 2)))  # TODO get rid of hardcode
+        self.ui.gain_label.setText(str(round(sell_profits, price_precision)))
 
         if buy_filled or sell_filled:
 
@@ -354,8 +362,8 @@ class TopSimplino(QMainWindow):
             self.ui.Sell_order_filled_label.setText(str(self.simplino.nb_sells))
             self.ui.Possible_sell.setText(str(self.simplino.nb_possible_sell))
 
-            self.ui.Buy_Qty_label.setText(str(round(self.simplino.buy_qty, 5)))  # TODO get rid of hardcode
-            self.ui.invested_label.setText(str(round(self.simplino.invested, 2)))  # TODO get rid of hardcode
+            self.ui.Buy_Qty_label.setText(str(round(self.simplino.buy_qty, qty_precision)))
+            self.ui.invested_label.setText(str(round(self.simplino.invested, price_precision)))
             self.ui.Buy_order_ID_label.setText(str(self.simplino.buy_order_id))
             self.ui.Sell_order_ID_label.setText(str(self.simplino.sell_order_id))
 
@@ -370,38 +378,43 @@ class TopSimplino(QMainWindow):
             self.ui.buy_order_price_label.setText(buy_order["info"]["price"])
 
         if sell_order is not None:
-            self.ui.sell_qty_label.setText(sell_order["info"]['origQty'])
-            self.ui.sell_filled_Qty_label.setText(sell_order["info"]["executedQty"])
-            self.ui.sell_order_price_label.setText(sell_order["info"]["price"])
+            if self.simplino.sell_order_id == 0:
+                self.ui.sell_qty_label.setText(" - ")
+                self.ui.sell_filled_Qty_label.setText(" - ")
+                self.ui.sell_order_price_label.setText(" - ")
+            else:
+                self.ui.sell_qty_label.setText(sell_order["info"]['origQty'])
+                self.ui.sell_filled_Qty_label.setText(sell_order["info"]["executedQty"])
+                self.ui.sell_order_price_label.setText(sell_order["info"]["price"])
 
     def set_buy_sell_tab_color(self, possible_sell, buy_filled):
-        '''
+        """
         This function generate the logic for the color pointer in simplino context table. Help the use to understand
         Simplino
 
         :param possible_sell: variable of simplino database that tell us the number of possible sells
         :param buy_filled: bool that tells us if its a sell order that got filled or a buy order
         :return:
-        '''
+        """
         if possible_sell == 0:
 
-            self.ui.tableWidget.item(possible_sell + 2, 0).setBackground(QColor(255, 255, 255))     # Last
+            self.ui.tableWidget.item(possible_sell + 2, 0).setBackground(QColor(255, 255, 255))  # Last
             self.ui.tableWidget.item(possible_sell + 2, 1).setBackground(QColor(255, 255, 255))
             self.ui.tableWidget.item(possible_sell + 1, 4).setBackground(QColor(255, 255, 255))
 
-            self.ui.tableWidget.item(possible_sell + 1, 0).setBackground(QColor(0, 180, 0))             # New
+            self.ui.tableWidget.item(possible_sell + 1, 0).setBackground(QColor(0, 180, 0))  # New
             self.ui.tableWidget.item(possible_sell + 1, 1).setBackground(QColor(0, 180, 0))
 
         elif possible_sell == 1:
-            if buy_filled: # No sell order
-                self.ui.tableWidget.item(possible_sell, 0).setBackground(QColor(255, 255, 255)) # Last
+            if buy_filled:  # No sell order
+                self.ui.tableWidget.item(possible_sell, 0).setBackground(QColor(255, 255, 255))  # Last
                 self.ui.tableWidget.item(possible_sell, 1).setBackground(QColor(255, 255, 255))
             else:
-                self.ui.tableWidget.item(possible_sell + 2, 0).setBackground(QColor(255, 255, 255)) # Last
+                self.ui.tableWidget.item(possible_sell + 2, 0).setBackground(QColor(255, 255, 255))  # Last
                 self.ui.tableWidget.item(possible_sell + 2, 1).setBackground(QColor(255, 255, 255))
                 self.ui.tableWidget.item(possible_sell + 1, 4).setBackground(QColor(255, 255, 255))
 
-            self.ui.tableWidget.item(possible_sell + 1, 0).setBackground(QColor(0, 180, 0))             # New
+            self.ui.tableWidget.item(possible_sell + 1, 0).setBackground(QColor(0, 180, 0))  # New
             self.ui.tableWidget.item(possible_sell + 1, 1).setBackground(QColor(0, 180, 0))
             self.ui.tableWidget.item(possible_sell, 4).setBackground(QColor(180, 0, 0))
 
@@ -411,14 +424,13 @@ class TopSimplino(QMainWindow):
                 self.ui.tableWidget.item(possible_sell, 1).setBackground(QColor(255, 255, 255))
                 self.ui.tableWidget.item(possible_sell - 1, 4).setBackground(QColor(255, 255, 255))
             else:
-                self.ui.tableWidget.item(possible_sell + 2, 0).setBackground(QColor(255, 255, 255))     #Last
+                self.ui.tableWidget.item(possible_sell + 2, 0).setBackground(QColor(255, 255, 255))  # Last
                 self.ui.tableWidget.item(possible_sell + 2, 1).setBackground(QColor(255, 255, 255))
                 self.ui.tableWidget.item(possible_sell + 1, 4).setBackground(QColor(255, 255, 255))
 
-            self.ui.tableWidget.item(possible_sell + 1, 0).setBackground(QColor(0, 180, 0))             # New
+            self.ui.tableWidget.item(possible_sell + 1, 0).setBackground(QColor(0, 180, 0))  # New
             self.ui.tableWidget.item(possible_sell + 1, 1).setBackground(QColor(0, 180, 0))
             self.ui.tableWidget.item(possible_sell, 4).setBackground(QColor(180, 0, 0))
-
 
 
 if __name__ == "__main__":
