@@ -44,24 +44,31 @@ class TopSimplino(QMainWindow):
         Button trigger the calculation of Simplino buy sell prevision and store it in the ui tab
         :return:
         """
+        if not self.running:
 
-        start_price = float(self.ui.start_price_text_input.text())
-        nb_buy = int(self.ui.nb_buy_text_input.text())
-        drop_percent = float(self.ui.drop_poucent_text_input.text())
-        pair = self.ui.pair_comboBox.currentText()
-        more_percent = float(self.ui.percent_more_buy_label.text())
+            start_price = float(self.ui.start_price_text_input.text())
+            nb_buy = int(self.ui.nb_buy_text_input.text())
+            drop_percent = float(self.ui.drop_poucent_text_input.text())
+            pair = self.ui.pair_comboBox.currentText()
+            more_percent = float(self.ui.percent_more_buy_label.text())
 
-        self.simplino = Simplino(pair)
+            self.simplino = Simplino(pair)
 
-        success, balance = self.api.get_asset_balance(self.simplino.sell_asset)
+            success, balance = self.api.get_asset_balance(self.simplino.sell_asset)
 
-        if success:
-            self.simplino.simplino_algo_create_buys(balance, start_price, drop_percent / 100, nb_buy, more_percent)
+            if success:
+                self.simplino.simplino_algo_create_buys(balance, start_price, drop_percent / 100, nb_buy, more_percent / 100)
 
-            self.create_table()
-            self.set_pair_label()
+                self.create_table()
+                self.set_pair_label()
+
+                self.simplino.buy_order_id = 0
+                self.simplino.sell_order_id = 0
+
+            else:
+                logger.error("Could not get balance info")
         else:
-            return
+            logger.info("can't calculate when Simplino is running")
 
     def btn_start(self):
         """
