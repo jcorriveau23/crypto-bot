@@ -34,11 +34,12 @@ class API:
         """
         if side is "Buy":
             try:
+                qty_precision = self.exchange.markets[pair]['precision']['price']
+                price_precision = self.exchange.markets[pair]['precision']['amount']
+
                 order_id = self.exchange.create_limit_buy_order(pair,
-                                                                round(qty, 5),
-                                                                # TODO uses contraints of pairing from binance api
-                                                                round(price, 2)
-                                                                # TODO uses contraints of pairing
+                                                                round(qty, qty_precision),
+                                                                round(price, price_precision)
                                                                 )
 
                 logger.info('Buy Order Sent => QTY: {} ETH, PRICE: {} Pair: {} order ID: {}'.format(qty, price, pair,
@@ -51,10 +52,12 @@ class API:
 
         elif side is "Sell":
             try:
+                qty_precision = self.exchange.markets[pair]['precision']['price']
+                price_precision = self.exchange.markets[pair]['precision']['amount']
+
                 order_id = self.exchange.create_limit_sell_order(pair,
-                                                                 round(qty, 5),
-                                                                 # TODO uses contraints of pairing
-                                                                 round(price, 2))  # TODO uses contraints of pairing
+                                                                 round(qty, qty_precision),
+                                                                 round(price, price_precision))
 
                 logger.info('Sell Order Sent => QTY: {}, PRICE: {} Pair: {} order ID: {}'.format(qty, price, pair,
                                                                                                  order_id['info'][
@@ -116,12 +119,10 @@ class API:
         try:
             info = self.exchange.fetch_balance()
             balances = info['info']['balances']
-            print(balances, sell_asset)
 
             for asset in balances:  # fetch the balance of the pairing asset. Selling side
                 if asset['asset'] == sell_asset:
                     balance = float(asset['free'])
-                    print("caca")
                     return True, balance
             return False, 0
 
