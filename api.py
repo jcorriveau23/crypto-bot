@@ -106,7 +106,7 @@ class API:
 
     def get_order_book(self, pair):
         try:
-            return True, self.exchange.fetch_order_book(self.simplino.pair)
+            return True, self.exchange.fetch_order_book(pair)
 
         except Exception as e:
             logger.error("Order book could not be fetched, pair: {}, Exception: {}".format(pair, e))
