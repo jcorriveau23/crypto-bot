@@ -236,8 +236,8 @@ class TopSimplino(QMainWindow):
         generate simplino calculation table
         :return:
         """
-        qty_precision = self.api.exchange.markets[self.simplino.pair]['precision']['price']
-        price_precision = self.api.exchange.markets[self.simplino.pair]['precision']['amount']
+        price_precision = self.api.exchange.markets[self.simplino.pair]['precision']['price']
+        qty_precision = self.api.exchange.markets[self.simplino.pair]['precision']['amount']
 
         self.ui.start_price_label.setText(str(round(self.simplino.start_price, price_precision)))
         self.ui.tableWidget.clear()
@@ -335,8 +335,8 @@ class TopSimplino(QMainWindow):
         :param sell_order: JSON from API of sell order information
         :return:
         """
-        qty_precision = self.api.exchange.markets[self.simplino.pair]['precision']['price']
-        price_precision = self.api.exchange.markets[self.simplino.pair]['precision']['amount']
+        price_precision = self.api.exchange.markets[self.simplino.pair]['precision']['price']
+        qty_precision = self.api.exchange.markets[self.simplino.pair]['precision']['amount']
 
         bid_price = float(order_book['bids'][0][0])
         ask_price = float(order_book['asks'][0][0])

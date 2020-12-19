@@ -34,8 +34,8 @@ class API:
         """
         if side is "Buy":
             try:
-                qty_precision = self.exchange.markets[pair]['precision']['price']
-                price_precision = self.exchange.markets[pair]['precision']['amount']
+                price_precision = self.exchange.markets[pair]['precision']['price']
+                qty_precision = self.exchange.markets[pair]['precision']['amount']
 
                 order_id = self.exchange.create_limit_buy_order(pair,
                                                                 round(qty, qty_precision),
@@ -52,8 +52,8 @@ class API:
 
         elif side is "Sell":
             try:
-                qty_precision = self.exchange.markets[pair]['precision']['price']
-                price_precision = self.exchange.markets[pair]['precision']['amount']
+                price_precision = self.exchange.markets[pair]['precision']['price']
+                qty_precision = self.exchange.markets[pair]['precision']['amount']
 
                 order_id = self.exchange.create_limit_sell_order(pair,
                                                                  round(qty, qty_precision),
