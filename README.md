@@ -10,7 +10,7 @@ api_secret = "your api private key"
 
 pip install pyqt5
 
-pip install python-binance
+pip install ccxt
 
 # to modify the ui with QTdesigner
 
