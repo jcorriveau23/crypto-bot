@@ -47,15 +47,8 @@ class TopSimplino(QMainWindow):
         if not self.running:
             pair = self.ui.pair_comboBox.currentText()
 
-            start_price = self.ui.start_price_text_input.text()
-            nb_buy = self.ui.nb_buy_text_input.text()
-            drop_percent = self.ui.drop_poucent_text_input.text()
-            more_percent = self.ui.percent_more_buy_label.text()
+            success_text, start_price, nb_buy, drop_percent, more_percent = self.text_input_handler()
 
-            success_text, start_price, nb_buy, drop_percent, more_percent = self.text_input_handler(start_price,
-                                                                                                  nb_buy,
-                                                                                                  drop_percent,
-                                                                                                  more_percent)
             if success_text:
                 self.simplino = Simplino(pair)
 
@@ -78,8 +71,6 @@ class TopSimplino(QMainWindow):
             else:
                 logger.error("text input check not valid")
                 return False
-
-
         else:
             logger.info("can't calculate when Simplino is running")
             return False
@@ -332,7 +323,18 @@ class TopSimplino(QMainWindow):
         self.ui.Order_filled_tab.setItem(row, 3, QTableWidgetItem((order_info["info"]["price"])))
         self.ui.Order_filled_tab.setItem(row, 4, QTableWidgetItem((str(order_info["info"]["time"]))))
 
-    def text_input_handler(self, start_price, nb_buy, drop_percent, more_percent):
+    def text_input_handler(self):
+        """
+        validate all 4 input for Simplino parameters. they need to be valid for a great simplino price and quantity
+        calculation
+
+        :return:
+        """
+        start_price = self.ui.start_price_text_input.text()
+        nb_buy = self.ui.nb_buy_text_input.text()
+        drop_percent = self.ui.drop_poucent_text_input.text()
+        more_percent = self.ui.percent_more_buy_label.text()
+
         if start_price.isnumeric():
             start_price = float(start_price)
             if start_price > 0:
@@ -378,7 +380,6 @@ class TopSimplino(QMainWindow):
             return False, None, None, None, None
 
         return True, start_price, nb_buy, drop_percent, more_percent
-
 
     def on_mount(self, api):
         """
