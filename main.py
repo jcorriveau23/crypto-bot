@@ -45,30 +45,44 @@ class TopSimplino(QMainWindow):
         :return:
         """
         if not self.running:
-
-            start_price = float(self.ui.start_price_text_input.text())
-            nb_buy = int(self.ui.nb_buy_text_input.text())
-            drop_percent = float(self.ui.drop_poucent_text_input.text())
             pair = self.ui.pair_comboBox.currentText()
-            more_percent = float(self.ui.percent_more_buy_label.text())
 
-            self.simplino = Simplino(pair)
+            start_price = self.ui.start_price_text_input.text()
+            nb_buy = self.ui.nb_buy_text_input.text()
+            drop_percent = self.ui.drop_poucent_text_input.text()
+            more_percent = self.ui.percent_more_buy_label.text()
 
-            success, balance = self.api.get_asset_balance(self.simplino.sell_asset)
+            success_text, start_price, nb_buy, drop_percent, more_percent = self.text_input_handler(start_price,
+                                                                                                  nb_buy,
+                                                                                                  drop_percent,
+                                                                                                  more_percent)
+            if success_text:
+                self.simplino = Simplino(pair)
 
-            if success:
-                self.simplino.simplino_algo_create_buys(balance, start_price, drop_percent / 100, nb_buy, more_percent / 100)
+                success_balance, balance = self.api.get_asset_balance(self.simplino.sell_asset)
 
-                self.create_table()
-                self.set_pair_label()
+                if success_balance:
+                    self.simplino.simplino_algo_create_buys(balance, start_price, drop_percent / 100, nb_buy,
+                                                            more_percent / 100)
 
-                self.simplino.buy_order_id = 0
-                self.simplino.sell_order_id = 0
+                    self.create_table()
+                    self.set_pair_label()
 
+                    self.simplino.buy_order_id = 0
+                    self.simplino.sell_order_id = 0
+                    return True
+
+                else:
+                    logger.error("Could not get balance info")
+                    return False
             else:
-                logger.error("Could not get balance info")
+                logger.error("text input check not valid")
+                return False
+
+
         else:
             logger.info("can't calculate when Simplino is running")
+            return False
 
     def btn_start(self):
         """
@@ -115,6 +129,7 @@ class TopSimplino(QMainWindow):
     def btn_stop(self):
         """
         kill the simplino thread strategy
+
         :return:
         """
         if self.running:
@@ -129,6 +144,7 @@ class TopSimplino(QMainWindow):
     def main_simplino(self):
         """
         main loop of the simplino strategy. This loop is run in its own thread
+
         :return:
         """
         while True:
@@ -138,6 +154,8 @@ class TopSimplino(QMainWindow):
             success, order_book = self.api.get_order_book(self.simplino.pair)
 
             if success:
+                logger.info(order_book)
+
                 buy_filled, buy_order_info = self.api.order_isfilled(self.simplino.pair,
                                                                      self.simplino.buy_order_id)
                 if self.simplino.sell_order_id is not 0:
@@ -160,6 +178,7 @@ class TopSimplino(QMainWindow):
         """
         call when a buy order is filled, cancel current sell order and resend a buy + sell order depending on
         the context
+
         :param order_info: JSON from api that contain the filled order info
         :return:
         """
@@ -203,6 +222,7 @@ class TopSimplino(QMainWindow):
     def sell_order_filled(self, order_info):
         """
         call when a sell order is filled, cancel current buy order and resend buy + sell order depending on the context
+
         :param order_info: JSON from api that contain the filled order info
         :return:
         """
@@ -241,6 +261,7 @@ class TopSimplino(QMainWindow):
     def create_table(self):
         """
         generate simplino calculation table
+
         :return:
         """
         price_precision = self.api.exchange.markets[self.simplino.pair]['precision']['price']
@@ -280,6 +301,7 @@ class TopSimplino(QMainWindow):
     def set_pair_label(self):
         """
         Set pair label depending on the paring chosen
+
         :return:
         """
         self.ui.price_pairing_label.setText(self.simplino.sell_asset)
@@ -298,6 +320,7 @@ class TopSimplino(QMainWindow):
     def add_filled_order_in_tab(self, order_info):
         """
         Add the information of a filled order in the order filled ui tab
+
         :param order_info:
         :return:
         """
@@ -309,9 +332,58 @@ class TopSimplino(QMainWindow):
         self.ui.Order_filled_tab.setItem(row, 3, QTableWidgetItem((order_info["info"]["price"])))
         self.ui.Order_filled_tab.setItem(row, 4, QTableWidgetItem((str(order_info["info"]["time"]))))
 
+    def text_input_handler(self, start_price, nb_buy, drop_percent, more_percent):
+        if start_price.isnumeric():
+            start_price = float(start_price)
+            if start_price > 0:
+                pass
+            else:
+                logger.error("price: {}, is not a positive number".format(start_price))
+                return False, None, None, None, None
+        else:
+            logger.error("price: {}, input is not numeric".format(start_price))
+            return False, None, None, None, None
+
+        if nb_buy.isnumeric():
+            nb_buy = int(nb_buy)
+            if nb_buy > 0:
+                pass
+            else:
+                logger.error("nb_buy: {}, is not a positive number".format(nb_buy))
+                return False, None, None, None, None
+        else:
+            logger.error("nb_buy: {}, input is not numeric".format(nb_buy))
+            return False, None, None, None, None
+
+        if drop_percent.isnumeric():
+            drop_percent = float(drop_percent)
+            if 0 < drop_percent < 100:
+                pass
+            else:
+                logger.error("drop_percent: {}, is not a valid percentage".format(drop_percent))
+                return False, None, None, None, None
+        else:
+            logger.error("drop_percent: {}, is not numeric".format(drop_percent))
+            return False, None, None, None, None
+
+        if more_percent.isnumeric():
+            more_percent = float(more_percent)
+            if 0 < more_percent < 100:
+                pass
+            else:
+                logger.error("more_percent: {}, is not a valid percentage".format(more_percent))
+                return False, None, None, None, None
+        else:
+            logger.error("drop_percent: {}, is not numeric".format(drop_percent))
+            return False, None, None, None, None
+
+        return True, start_price, nb_buy, drop_percent, more_percent
+
+
     def on_mount(self, api):
         """
         Call when app started, set tab title and combo box available pairs
+
         :param api:
         :return:
         """
@@ -335,6 +407,7 @@ class TopSimplino(QMainWindow):
     def update_visual(self, order_book, buy_filled, sell_filled, buy_order, sell_order):
         """
         general real time visual update functions. Called every period of filled order check.
+
         :param order_book: JSON from API of bid and ask price
         :param buy_filled: bool that tells us if the buy order is filled
         :param sell_filled: bool that tells us if the sell order is filled
