@@ -19,6 +19,10 @@ file_handler = logging.FileHandler("log_file.log")
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
+gray = QColor(200, 200, 200)
+red = QColor(200, 120, 120)
+green = QColor(120, 200, 120)
+white = QColor(255, 255, 255)
 
 class TopSimplino(QMainWindow):
     def __init__(self, parent=None):
@@ -89,8 +93,8 @@ class TopSimplino(QMainWindow):
                                                                                       "Buy",
                                                                                       self.simplino.buyPrices[0],
                                                                                       self.simplino.buy_qtys[0])
-                    self.ui.tableWidget.item(1, 0).setBackground(QColor(0, 180, 0))
-                    self.ui.tableWidget.item(1, 1).setBackground(QColor(0, 180, 0))
+                    self.ui.tableWidget.item(1, 0).setBackground(green)
+                    self.ui.tableWidget.item(1, 1).setBackground(green)
                 else:  # restart the previous run
                     logger.info("Restart the previous run")
                     success = True
@@ -264,15 +268,15 @@ class TopSimplino(QMainWindow):
         self.ui.tableWidget.setColumnCount(5)
 
         self.ui.tableWidget.setItem(0, 0, QTableWidgetItem("Buy Price"))
-        self.ui.tableWidget.item(0, 0).setBackground(QColor(200, 200, 200))
+        self.ui.tableWidget.item(0, 0).setBackground(gray)
         self.ui.tableWidget.setItem(0, 1, QTableWidgetItem("Buy Qty"))
-        self.ui.tableWidget.item(0, 1).setBackground(QColor(200, 200, 200))
+        self.ui.tableWidget.item(0, 1).setBackground(gray)
         self.ui.tableWidget.setItem(0, 2, QTableWidgetItem("Cumulate"))
-        self.ui.tableWidget.item(0, 2).setBackground(QColor(200, 200, 200))
+        self.ui.tableWidget.item(0, 2).setBackground(gray)
         self.ui.tableWidget.setItem(0, 3, QTableWidgetItem("Cumulative max"))
-        self.ui.tableWidget.item(0, 3).setBackground(QColor(200, 200, 200))
+        self.ui.tableWidget.item(0, 3).setBackground(gray)
         self.ui.tableWidget.setItem(0, 4, QTableWidgetItem("Sell Price"))
-        self.ui.tableWidget.item(0, 4).setBackground(QColor(200, 200, 200))
+        self.ui.tableWidget.item(0, 4).setBackground(gray)
 
         cumulative = 0
 
@@ -395,15 +399,15 @@ class TopSimplino(QMainWindow):
         self.ui.Order_filled_tab.setColumnCount(5)
 
         self.ui.Order_filled_tab.setItem(0, 0, QTableWidgetItem("Order ID"))
-        self.ui.Order_filled_tab.item(0, 0).setBackground(QColor(200, 200, 200))
+        self.ui.Order_filled_tab.item(0, 0).setBackground(gray)
         self.ui.Order_filled_tab.setItem(0, 1, QTableWidgetItem("Side"))
-        self.ui.Order_filled_tab.item(0, 1).setBackground(QColor(200, 200, 200))
+        self.ui.Order_filled_tab.item(0, 1).setBackground(gray)
         self.ui.Order_filled_tab.setItem(0, 2, QTableWidgetItem("Qty"))
-        self.ui.Order_filled_tab.item(0, 2).setBackground(QColor(200, 200, 200))
+        self.ui.Order_filled_tab.item(0, 2).setBackground(gray)
         self.ui.Order_filled_tab.setItem(0, 3, QTableWidgetItem("Price"))
-        self.ui.Order_filled_tab.item(0, 3).setBackground(QColor(200, 200, 200))
+        self.ui.Order_filled_tab.item(0, 3).setBackground(gray)
         self.ui.Order_filled_tab.setItem(0, 4, QTableWidgetItem("Time"))
-        self.ui.Order_filled_tab.item(0, 4).setBackground(QColor(200, 200, 200))
+        self.ui.Order_filled_tab.item(0, 4).setBackground(gray)
 
     def update_visual(self, order_book, buy_filled, sell_filled, buy_order, sell_order):
         """
@@ -479,46 +483,46 @@ class TopSimplino(QMainWindow):
         """
         if possible_sell == 0:
 
-            self.ui.tableWidget.item(possible_sell + 2, 0).setBackground(QColor(255, 255, 255))  # Last
-            self.ui.tableWidget.item(possible_sell + 2, 1).setBackground(QColor(255, 255, 255))
-            self.ui.tableWidget.item(possible_sell + 1, 4).setBackground(QColor(255, 255, 255))
+            self.ui.tableWidget.item(possible_sell + 2, 0).setBackground(white)  # Last
+            self.ui.tableWidget.item(possible_sell + 2, 1).setBackground(white)
+            self.ui.tableWidget.item(possible_sell + 1, 4).setBackground(white)
 
-            self.ui.tableWidget.item(possible_sell + 1, 0).setBackground(QColor(0, 180, 0))  # New
-            self.ui.tableWidget.item(possible_sell + 1, 1).setBackground(QColor(0, 180, 0))
+            self.ui.tableWidget.item(possible_sell + 1, 0).setBackground(green)  # New
+            self.ui.tableWidget.item(possible_sell + 1, 1).setBackground(green)
 
         elif possible_sell == 1:
             if buy_filled:  # No sell order
-                self.ui.tableWidget.item(possible_sell, 0).setBackground(QColor(255, 255, 255))  # Last
-                self.ui.tableWidget.item(possible_sell, 1).setBackground(QColor(255, 255, 255))
+                self.ui.tableWidget.item(possible_sell, 0).setBackground(white)  # Last
+                self.ui.tableWidget.item(possible_sell, 1).setBackground(white)
             else:
-                self.ui.tableWidget.item(possible_sell + 2, 0).setBackground(QColor(255, 255, 255))  # Last
-                self.ui.tableWidget.item(possible_sell + 2, 1).setBackground(QColor(255, 255, 255))
-                self.ui.tableWidget.item(possible_sell + 1, 4).setBackground(QColor(255, 255, 255))
+                self.ui.tableWidget.item(possible_sell + 2, 0).setBackground(white)  # Last
+                self.ui.tableWidget.item(possible_sell + 2, 1).setBackground(white)
+                self.ui.tableWidget.item(possible_sell + 1, 4).setBackground(white)
 
-            self.ui.tableWidget.item(possible_sell + 1, 0).setBackground(QColor(0, 180, 0))  # New
-            self.ui.tableWidget.item(possible_sell + 1, 1).setBackground(QColor(0, 180, 0))
-            self.ui.tableWidget.item(possible_sell, 4).setBackground(QColor(180, 0, 0))
+            self.ui.tableWidget.item(possible_sell + 1, 0).setBackground(green)  # New
+            self.ui.tableWidget.item(possible_sell + 1, 1).setBackground(green)
+            self.ui.tableWidget.item(possible_sell, 4).setBackground(red)
 
         elif possible_sell == self.simplino.nb_buy_depth:
-            self.ui.tableWidget.item(possible_sell, 0).setBackground(QColor(255, 255, 255))  # Last
-            self.ui.tableWidget.item(possible_sell, 1).setBackground(QColor(255, 255, 255))
-            self.ui.tableWidget.item(possible_sell - 1, 4).setBackground(QColor(255, 255, 255))
+            self.ui.tableWidget.item(possible_sell, 0).setBackground(white)  # Last
+            self.ui.tableWidget.item(possible_sell, 1).setBackground(white)
+            self.ui.tableWidget.item(possible_sell - 1, 4).setBackground(white)
 
-            self.ui.tableWidget.item(possible_sell, 4).setBackground(QColor(180, 0, 0))  # New
+            self.ui.tableWidget.item(possible_sell, 4).setBackground(red)  # New
 
         else:
             if buy_filled:
-                self.ui.tableWidget.item(possible_sell, 0).setBackground(QColor(255, 255, 255))  # Last
-                self.ui.tableWidget.item(possible_sell, 1).setBackground(QColor(255, 255, 255))
-                self.ui.tableWidget.item(possible_sell - 1, 4).setBackground(QColor(255, 255, 255))
+                self.ui.tableWidget.item(possible_sell, 0).setBackground(white)  # Last
+                self.ui.tableWidget.item(possible_sell, 1).setBackground(white)
+                self.ui.tableWidget.item(possible_sell - 1, 4).setBackground(white)
             else:
-                self.ui.tableWidget.item(possible_sell + 2, 0).setBackground(QColor(255, 255, 255))  # Last
-                self.ui.tableWidget.item(possible_sell + 2, 1).setBackground(QColor(255, 255, 255))
-                self.ui.tableWidget.item(possible_sell + 1, 4).setBackground(QColor(255, 255, 255))
+                self.ui.tableWidget.item(possible_sell + 2, 0).setBackground(white)  # Last
+                self.ui.tableWidget.item(possible_sell + 2, 1).setBackground(white)
+                self.ui.tableWidget.item(possible_sell + 1, 4).setBackground(white)
 
-            self.ui.tableWidget.item(possible_sell + 1, 0).setBackground(QColor(0, 180, 0))  # New
-            self.ui.tableWidget.item(possible_sell + 1, 1).setBackground(QColor(0, 180, 0))
-            self.ui.tableWidget.item(possible_sell, 4).setBackground(QColor(180, 0, 0))
+            self.ui.tableWidget.item(possible_sell + 1, 0).setBackground(green)  # New
+            self.ui.tableWidget.item(possible_sell + 1, 1).setBackground(green)
+            self.ui.tableWidget.item(possible_sell, 4).setBackground(red)
 
 
 if __name__ == "__main__":
