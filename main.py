@@ -5,6 +5,9 @@ import logging
 import threading
 import time
 
+import faulthandler
+faulthandler.enable()
+
 from api import API
 from Algos import Simplino
 
@@ -104,7 +107,11 @@ class TopSimplino(QMainWindow):
                     self.ui.start_time_label.setText(str(time.time()))
                     logger.info("Starting thread for simplino")
                     self.running = True
+                    threading.stack_size(0x2000000)
+
                     self.thread_simplino = threading.Thread(target=self.main_simplino)
+
+                    print(threading.stack_size())
                     self.thread_simplino.start()
 
                     return True
