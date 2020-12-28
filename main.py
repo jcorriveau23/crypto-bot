@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets
 import logging
 import threading
 import time
+import json
 
 import faulthandler
 faulthandler.enable()
@@ -37,6 +38,7 @@ class TopSimplino(QMainWindow):
         self.ui.calculate_button.clicked.connect(lambda: self.btn_calculate_simplino())
         self.ui.start_button.clicked.connect(lambda: self.btn_start())
         self.ui.stop_button.clicked.connect(lambda: self.btn_stop())
+        self.ui.load_run_button.clicked.connect(lambda: self.btn_load_simplino_persistent_storage())
 
         self.api = API("binance")  # Create and instance that can communicate with an exchange
         self.simplino = None
@@ -94,7 +96,7 @@ class TopSimplino(QMainWindow):
                 if self.simplino.buy_order_id == 0:  # New run started
                     success, self.simplino.buy_order_id = self.api.create_limit_order(self.simplino.pair,
                                                                                       "Buy",
-                                                                                      self.simplino.buyPrices[0],
+                                                                                      self.simplino.buy_prices[0],
                                                                                       self.simplino.buy_qtys[0])
                     self.ui.tableWidget.item(1, 0).setBackground(green)
                     self.ui.tableWidget.item(1, 1).setBackground(green)
@@ -200,7 +202,7 @@ class TopSimplino(QMainWindow):
             logger.info("no active sell order")
 
         if self.simplino.nb_possible_sell < self.simplino.nb_buy_depth:
-            buy_price = self.simplino.buyPrices[self.simplino.nb_possible_sell]
+            buy_price = self.simplino.buy_prices[self.simplino.nb_possible_sell]
             buy_qty = self.simplino.buy_qtys[self.simplino.nb_possible_sell]
 
             success, self.simplino.buy_order_id = self.api.create_limit_order(self.simplino.pair,
@@ -221,6 +223,8 @@ class TopSimplino(QMainWindow):
                                                                            sell_qty)
         # TODO use the success to retrigger another try if not success
 
+        self.update_simplino_persistent_storage()  # store the information of the current run
+
     def sell_order_filled(self, order_info):
         """
         call when a sell order is filled, cancel current buy order and resend buy + sell order depending on the context
@@ -240,7 +244,7 @@ class TopSimplino(QMainWindow):
         if self.api.cancel_order(self.simplino.buy_order_id, self.simplino.pair):
             self.simplino.nb_possible_sell = self.simplino.nb_buys - self.simplino.nb_sells
 
-            buy_price = self.simplino.buyPrices[self.simplino.nb_possible_sell]
+            buy_price = self.simplino.buy_prices[self.simplino.nb_possible_sell]
             buy_qty = self.simplino.buy_qtys[self.simplino.nb_possible_sell]
 
             success, self.simplino.buy_order_id = self.api.create_limit_order(self.simplino.pair,
@@ -260,6 +264,8 @@ class TopSimplino(QMainWindow):
             else:
                 self.simplino.sell_order_id = 0  # NULL order ID so don't get fill checked
 
+        self.update_simplino_persistent_storage() # store the information of the current run
+
     def create_table(self):
         """
         generate simplino calculation table
@@ -271,7 +277,7 @@ class TopSimplino(QMainWindow):
 
         self.ui.start_price_label.setText(str(round(self.simplino.start_price, price_precision)))
         self.ui.tableWidget.clear()
-        self.ui.tableWidget.setRowCount(len(self.simplino.buyPrices) + 1)
+        self.ui.tableWidget.setRowCount(len(self.simplino.buy_prices) + 1)
         self.ui.tableWidget.setColumnCount(5)
 
         self.ui.tableWidget.setItem(0, 0, QTableWidgetItem("Buy Price"))
@@ -287,11 +293,11 @@ class TopSimplino(QMainWindow):
 
         cumulative = 0
 
-        for i in range(1, len(self.simplino.buyPrices) + 1):
-            cumulative_max = i * self.simplino.buy_qtys[i - 1] * self.simplino.buyPrices[i - 1]
-            cumulative += self.simplino.buy_qtys[i - 1] * self.simplino.buyPrices[i - 1]
+        for i in range(1, len(self.simplino.buy_prices) + 1):
+            cumulative_max = i * self.simplino.buy_qtys[i - 1] * self.simplino.buy_prices[i - 1]
+            cumulative += self.simplino.buy_qtys[i - 1] * self.simplino.buy_prices[i - 1]
 
-            self.ui.tableWidget.setItem(i, 0, QTableWidgetItem((str(round(self.simplino.buyPrices[i - 1],
+            self.ui.tableWidget.setItem(i, 0, QTableWidgetItem((str(round(self.simplino.buy_prices[i - 1],
                                                                           price_precision)))))
             self.ui.tableWidget.setItem(i, 1, QTableWidgetItem((str(round(self.simplino.buy_qtys[i - 1],
                                                                           qty_precision)))))
@@ -530,6 +536,66 @@ class TopSimplino(QMainWindow):
             self.ui.tableWidget.item(possible_sell + 1, 0).setBackground(green)  # New
             self.ui.tableWidget.item(possible_sell + 1, 1).setBackground(green)
             self.ui.tableWidget.item(possible_sell, 4).setBackground(red)
+
+    def update_simplino_persistent_storage(self):
+        """
+        Each time a buy or sell order is filled in a simplino run, this functions is called for persistant storage
+        The simplino data is stoded in a file called "run.json"
+
+        :return:
+        """
+        data = {'pair': self.simplino.pair, 'buy_asset': self.simplino.buy_asset,
+                'sell_asset': self.simplino.sell_asset, 'buy_qtys': self.simplino.buy_qtys,
+                'buy_prices': self.simplino.buy_prices, 'sell_prices': self.simplino.sell_prices,
+                'nb_buy_depth': self.simplino.nb_buy_depth, 'nb_sells': self.simplino.nb_sells,
+                'nb_buys': self.simplino.nb_buys, 'nb_possible_sell': self.simplino.nb_possible_sell,
+                'buy_qty': self.simplino.buy_qty, 'invested': self.simplino.invested,
+                'buy_order_id': self.simplino.buy_order_id, 'sell_order_id': self.simplino.sell_order_id,
+                'start_price': self.simplino.start_price, 'ready': self.simplino.ready}
+
+        with open('run.json', 'w') as f:
+            json.dump(data, f)
+
+    def btn_load_simplino_persistent_storage(self):
+        """
+        when the load run button is pressed, this function is called to load the json from "run.json file.
+        a new simplino object is being created
+
+        Simplino must not be running.
+
+        :return:
+        """
+        if not self.running:
+            f = open('run.json')
+            data = json.load(f)
+
+            self.simplino = Simplino(data['pair'])
+
+            self.simplino.pair = data['pair']
+            self.simplino.buy_asset = data['buy_asset']
+            self.simplino.sell_asset = data['sell_asset']
+            self.simplino.buy_qtys = data['buy_qtys']
+            self.simplino.buy_prices = data['buy_prices']
+            self.simplino.sell_prices = data['sell_prices']
+            self.simplino.nb_buy_depth = data['nb_buy_depth']
+            self.simplino.nb_sells = data['nb_sells']
+
+            self.simplino.nb_buys = data['nb_buys']
+            self.simplino.nb_possible_sell = data['nb_possible_sell']
+            self.simplino.buy_qty = data['buy_qty']
+            self.simplino.invested = data['invested']
+            self.simplino.buy_order_id = data['buy_order_id']
+            self.simplino.sell_order_id = data['sell_order_id']
+            self.simplino.start_price = data['start_price']
+            self.simplino.ready = data['ready']
+
+            self.set_pair_label()
+            logger.info('last run loaded !')
+        else:
+            logger.error('App is currently running')
+
+
+
 
 
 if __name__ == "__main__":

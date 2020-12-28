@@ -8,7 +8,7 @@ class Simplino():
         self.sell_asset = trading_asset[1]
 
         self.buy_qtys = []
-        self.buyPrices = []
+        self.buy_prices = []
         self.sell_prices = []
 
         self.nb_buy_depth = 0
@@ -27,7 +27,7 @@ class Simplino():
         self.ready = False
 
     def simplino_algo_create_buys(self, balance, start_price, loss_depth, buys_nb_depth, buy_more_pourcent):
-        self.buyPrices = []
+        self.buy_prices = []
         self.sell_prices = []
         self.buy_qtys = []
         self.start_price = start_price
@@ -43,15 +43,15 @@ class Simplino():
 
         for i in range(buys_nb_depth):
             buy_price *= (1 - buy_coef)
-            self.buyPrices.append(buy_price)
+            self.buy_prices.append(buy_price)
             if i == 0:
-                self.sell_prices.append(self.buyPrices[i]*1.005) #TODO get rid of hardcode percentage on first sell
+                self.sell_prices.append(self.buy_prices[i]*1.005) #TODO get rid of hardcode percentage on first sell
             else:
-                self.sell_prices.append(self.buyPrices[i] + (self.buyPrices[i-1] - self.buyPrices[i]) / 2)
+                self.sell_prices.append(self.buy_prices[i] + (self.buy_prices[i-1] - self.buy_prices[i]) / 2)
 
             buy_qty.append((1 + buy_more_pourcent)**i)
 
-            mult.append(buy_qty[i]*self.buyPrices[i])
+            mult.append(buy_qty[i]*self.buy_prices[i])
 
 
         start_qty = balance/sum(mult)
@@ -60,7 +60,7 @@ class Simplino():
             self.buy_qtys.append(qty)
             qty *= (1 + buy_more_pourcent)
 
-        print("buy price list value: {}".format(self.buyPrices))
+        print("buy price list value: {}".format(self.buy_prices))
         print("buy qty list value: {}".format(self.buy_qtys))
         print("sell price list value: {}".format(self.sell_prices))
 
