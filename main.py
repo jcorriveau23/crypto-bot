@@ -409,6 +409,8 @@ class TopSimplino(QMainWindow):
         :param api:
         :return:
         """
+        self.ui.pair_comboBox.clear()
+
         for symbol in api.exchange.markets:
             self.ui.pair_comboBox.addItem(symbol)
 
