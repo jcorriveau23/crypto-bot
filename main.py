@@ -35,18 +35,22 @@ class TopSimplino(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+        self.available_exchange()
+        self.api = API(self.ui.exchange_comboBox.currentText()) # Default api is first of drop box
+
         self.ui.calculate_button.clicked.connect(lambda: self.btn_calculate_simplino())
         self.ui.start_button.clicked.connect(lambda: self.btn_start())
         self.ui.stop_button.clicked.connect(lambda: self.btn_stop())
         self.ui.load_run_button.clicked.connect(lambda: self.btn_load_simplino_persistent_storage())
+        self.ui.exchange_comboBox.currentTextChanged.connect(lambda: self.update_available_pair(self.api))
 
-        self.api = API("binance")  # Create and instance that can communicate with an exchange
         self.simplino = None
-        self.on_mount(self.api)
 
         self.thread_simplino = None
         self.thread_simplino_kill = False
         self.running = False
+
+        self.update_available_pair(self.api)
 
     def btn_calculate_simplino(self):
         """
@@ -398,7 +402,7 @@ class TopSimplino(QMainWindow):
 
         return True, start_price, nb_buy, drop_percent, more_percent
 
-    def on_mount(self, api):
+    def update_available_pair(self, api):
         """
         Call when app started, set tab title and combo box available pairs
 
@@ -421,6 +425,16 @@ class TopSimplino(QMainWindow):
         self.ui.Order_filled_tab.item(0, 3).setBackground(gray)
         self.ui.Order_filled_tab.setItem(0, 4, QTableWidgetItem("Time"))
         self.ui.Order_filled_tab.item(0, 4).setBackground(gray)
+
+
+    def available_exchange(self):
+        """
+        Called when apps boots and add available exchange on drop box
+
+        Only available exchange is binance for now
+        :return:
+        """
+        self.ui.exchange_comboBox.addItem("binance")
 
     def update_visual(self, order_book, buy_filled, sell_filled, buy_order, sell_order):
         """
@@ -540,7 +554,7 @@ class TopSimplino(QMainWindow):
     def update_simplino_persistent_storage(self):
         """
         Each time a buy or sell order is filled in a simplino run, this functions is called for persistant storage
-        The simplino data is stoded in a file called "run.json"
+        The simplino data is stored in a file called "run.json"
 
         :return:
         """
@@ -566,7 +580,7 @@ class TopSimplino(QMainWindow):
         :return:
         """
         if not self.running:
-            f = open('run.json')
+            f = open('run.json') # TODO get rid of hardcode, can load any json file
             data = json.load(f)
 
             self.simplino = Simplino(data['pair'])
