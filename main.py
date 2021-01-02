@@ -330,6 +330,7 @@ class TopSimplino(QMainWindow):
         self.ui.price_pairing_label_2.setText(self.simplino.sell_asset)
         self.ui.price_pairing_label_3.setText(self.simplino.sell_asset)
         self.ui.price_pairing_label_4.setText(self.simplino.sell_asset)
+        self.ui.price_pairing_label_5.setText(self.simplino.sell_asset)
         self.ui.Pairing_label.setText(self.simplino.pair)
         self.ui.sell_asset_label.setText(self.simplino.sell_asset)
         self.ui.sell_asset_label_2.setText(self.simplino.sell_asset)
