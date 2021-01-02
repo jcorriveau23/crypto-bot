@@ -119,13 +119,14 @@ class TopSimplino(QMainWindow):
                 if success:
                     logger.info("Simplino start")
                     self.ui.start_time_label.setText(str(time.time()))
-                    logger.info("Starting thread for simplino")
+
                     self.running = True
                     threading.stack_size(0x2000000)
 
                     self.thread_simplino = threading.Thread(target=self.main_simplino)
 
-                    print(threading.stack_size())
+                    self.ui.simplino_parameters_group.setEnabled(False)
+                    logger.info("Starting thread for simplino")
                     self.thread_simplino.start()
 
                     return True
@@ -154,6 +155,7 @@ class TopSimplino(QMainWindow):
             self.thread_simplino_kill = False
             self.running = False
             logger.debug("thread KILLED")
+            self.ui.simplino_parameters_group.setEnabled(True)
         else:
             logger.info("Simplino is not running")
 
