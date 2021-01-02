@@ -60,7 +60,7 @@ class TopSimplino(QMainWindow):
         if not self.running:
             pair = self.ui.pair_comboBox.currentText()
 
-            success_text, start_price, nb_buy, drop_percent, more_percent = self.text_input_handler()
+            trading_qty, success_text, start_price, nb_buy, drop_percent, more_percent = self.text_input_handler()
 
             if success_text:
                 self.simplino = Simplino(pair)
@@ -68,15 +68,23 @@ class TopSimplino(QMainWindow):
                 success_balance, balance = self.api.get_asset_balance(self.simplino.sell_asset)
 
                 if success_balance:
-                    self.simplino.simplino_algo_create_buys(balance, start_price, drop_percent / 100, nb_buy,
-                                                            more_percent / 100)
 
-                    self.create_table()
-                    self.set_pair_label()
+                    if trading_qty < balance:
 
-                    self.simplino.buy_order_id = 0
-                    self.simplino.sell_order_id = 0
-                    return True
+                        # create simplino context
+                        self.simplino.simplino_algo_create_buys(trading_qty, start_price, drop_percent / 100, nb_buy,
+                                                                more_percent / 100)
+
+                        self.create_table()
+                        self.set_pair_label()
+
+                        self.simplino.buy_order_id = 0
+                        self.simplino.sell_order_id = 0
+                        return True
+
+                    else:
+                        logger.error("not enough balance => Trading qty: {}, balance: {}".format(trading_qty, balance))
+                        return False
 
                 else:
                     logger.error("Could not get balance info")
@@ -351,10 +359,22 @@ class TopSimplino(QMainWindow):
 
         :return:
         """
+        trading_qty = self.ui.trading_qty_text_input.text()
         start_price = self.ui.start_price_text_input.text()
         nb_buy = self.ui.nb_buy_text_input.text()
         drop_percent = self.ui.drop_poucent_text_input.text()
         more_percent = self.ui.percent_more_buy_label.text()
+
+        if trading_qty.isnumeric():
+            trading_qty = float(trading_qty)
+            if trading_qty > 0:
+                pass
+            else:
+                logger.error("trading_qty: {}, is not a positive number".format(trading_qty))
+                return False, None, None, None, None, None
+        else:
+            logger.error("trading_qty: {}, input is not numeric".format(trading_qty))
+            return False, None, None, None, None, None
 
         if start_price.isnumeric():
             start_price = float(start_price)
@@ -362,10 +382,10 @@ class TopSimplino(QMainWindow):
                 pass
             else:
                 logger.error("price: {}, is not a positive number".format(start_price))
-                return False, None, None, None, None
+                return False, None, None, None, None, None
         else:
             logger.error("price: {}, input is not numeric".format(start_price))
-            return False, None, None, None, None
+            return False, None, None, None, None, None
 
         if nb_buy.isnumeric():
             nb_buy = int(nb_buy)
@@ -373,10 +393,10 @@ class TopSimplino(QMainWindow):
                 pass
             else:
                 logger.error("nb_buy: {}, is not a positive number".format(nb_buy))
-                return False, None, None, None, None
+                return False, None, None, None, None, None
         else:
             logger.error("nb_buy: {}, input is not numeric".format(nb_buy))
-            return False, None, None, None, None
+            return False, None, None, None, None, None
 
         if drop_percent.isnumeric():
             drop_percent = float(drop_percent)
@@ -384,10 +404,10 @@ class TopSimplino(QMainWindow):
                 pass
             else:
                 logger.error("drop_percent: {}, is not a valid percentage".format(drop_percent))
-                return False, None, None, None, None
+                return False, None, None, None, None, None
         else:
             logger.error("drop_percent: {}, is not numeric".format(drop_percent))
-            return False, None, None, None, None
+            return False, None, None, None, None, None
 
         if more_percent.isnumeric():
             more_percent = float(more_percent)
@@ -395,12 +415,12 @@ class TopSimplino(QMainWindow):
                 pass
             else:
                 logger.error("more_percent: {}, is not a valid percentage".format(more_percent))
-                return False, None, None, None, None
+                return False, None, None, None, None, None
         else:
             logger.error("drop_percent: {}, is not numeric".format(drop_percent))
-            return False, None, None, None, None
+            return False, None, None, None, None, None
 
-        return True, start_price, nb_buy, drop_percent, more_percent
+        return True, trading_qty, start_price, nb_buy, drop_percent, more_percent
 
     def update_available_pair(self, api):
         """
