@@ -60,7 +60,7 @@ class TopSimplino(QMainWindow):
         if not self.running:
             pair = self.ui.pair_comboBox.currentText()
 
-            trading_qty, success_text, start_price, nb_buy, drop_percent, more_percent = self.text_input_handler()
+            success_text, trading_qty, start_price, nb_buy, drop_percent, more_percent = self.text_input_handler()
 
             if success_text:
                 self.simplino = Simplino(pair)
