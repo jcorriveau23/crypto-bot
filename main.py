@@ -190,7 +190,7 @@ class TopSimplino(QMainWindow):
 
                 self.update_visual(order_book, buy_filled, sell_filled, buy_order_info, sell_order_info)
 
-            time.sleep(1)  # exchange polling rate
+            time.sleep(2)  # exchange polling rate
 
     def buy_order_filled(self, order_info):
         """
@@ -627,7 +627,32 @@ class TopSimplino(QMainWindow):
             self.simplino.sell_order_id = data['sell_order_id']
             self.simplino.start_price = data['start_price']
             self.simplino.ready = data['ready']
-
+            
+            buy_filled, buy_order_info = self.api.order_isfilled(self.simplino.pair,
+                                                                     self.simplino.buy_order_id)
+            print(buy_filled)
+            
+            if buy_filled:
+                buy_price = self.simplino.buy_prices[self.simplino.nb_possible_sell]
+                buy_qty = self.simplino.buy_qtys[self.simplino.nb_possible_sell]
+                success, self.simplino.buy_order_id = self.api.create_limit_order(self.simplino.pair,
+                                                                                      "Buy",
+                                                                                      buy_price,
+                                                                                      buy_qty)
+                print("Buy Resent")
+            
+            sell_filled, sell_order_info = self.api.order_isfilled(self.simplino.pair,
+                                                                     self.simplino.sell_order_id)
+            if sell_filled:
+                sell_price = self.simplino.sell_prices[self.simplino.nb_possible_sell - 1]
+                sell_qty = self.simplino.buy_qty / self.simplino.nb_possible_sell
+                success, self.simplino.sell_order_id = self.api.create_limit_order(self.simplino.pair,
+                                                                                      "Sell",
+                                                                                      sell_price,
+                                                                                      sell_qty)
+                print("Sell Resent")
+            
+            self.create_table()
             self.set_pair_label()
             logger.info('last run loaded !')
         else:
