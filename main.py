@@ -7,6 +7,7 @@ import time
 import json
 
 import faulthandler
+
 faulthandler.enable()
 
 from api import API
@@ -28,6 +29,7 @@ red = QColor(200, 120, 120)
 green = QColor(120, 200, 120)
 white = QColor(255, 255, 255)
 
+
 class TopSimplino(QMainWindow):
     def __init__(self, parent=None):
         super().__init__()
@@ -36,7 +38,7 @@ class TopSimplino(QMainWindow):
         self.ui.setupUi(self)
 
         self.available_exchange()
-        self.api = API(self.ui.exchange_comboBox.currentText()) # Default api is first of drop box
+        self.api = API(self.ui.exchange_comboBox.currentText())  # Default api is first of drop box
 
         self.ui.calculate_button.clicked.connect(lambda: self.btn_calculate_simplino())
         self.ui.start_button.clicked.connect(lambda: self.btn_start())
@@ -172,7 +174,6 @@ class TopSimplino(QMainWindow):
             success, order_book = self.api.get_order_book(self.simplino.pair)
 
             if success:
-                logger.info(order_book)
 
                 buy_filled, buy_order_info = self.api.order_isfilled(self.simplino.pair,
                                                                      self.simplino.buy_order_id)
@@ -188,7 +189,12 @@ class TopSimplino(QMainWindow):
                 elif sell_filled:
                     self.sell_order_filled(sell_order_info)
 
-                self.update_visual(order_book, buy_filled, sell_filled, buy_order_info, sell_order_info)
+                bid_price = float(order_book['bids'][0][0])
+                ask_price = float(order_book['asks'][0][0])
+                # we assume that price equal mean between bids and ask price (dont need to call the api again)
+                current_price = (bid_price + ask_price) / 2
+                self.update_visual(bid_price, ask_price, current_price, buy_filled, sell_filled, buy_order_info,
+                                   sell_order_info)
 
             time.sleep(2)  # exchange polling rate
 
@@ -278,7 +284,7 @@ class TopSimplino(QMainWindow):
             else:
                 self.simplino.sell_order_id = 0  # NULL order ID so don't get fill checked
 
-        self.update_simplino_persistent_storage() # store the information of the current run
+        self.update_simplino_persistent_storage()  # store the information of the current run
 
     def create_table(self):
         """
@@ -451,7 +457,6 @@ class TopSimplino(QMainWindow):
         self.ui.Order_filled_tab.setItem(0, 4, QTableWidgetItem("Time"))
         self.ui.Order_filled_tab.item(0, 4).setBackground(gray)
 
-
     def available_exchange(self):
         """
         Called when apps boots and add available exchange on drop box
@@ -461,11 +466,13 @@ class TopSimplino(QMainWindow):
         """
         self.ui.exchange_comboBox.addItem("binance")
 
-    def update_visual(self, order_book, buy_filled, sell_filled, buy_order, sell_order):
+    def update_visual(self, bid_price, ask_price, current_price, buy_filled, sell_filled, buy_order, sell_order):
         """
         general real time visual update functions. Called every period of filled order check.
 
-        :param order_book: JSON from API of bid and ask price
+        :param bid_price:
+        :param ask_price:
+        :param current_price:
         :param buy_filled: bool that tells us if the buy order is filled
         :param sell_filled: bool that tells us if the sell order is filled
         :param buy_order: JSON from API of buy order information
@@ -474,11 +481,6 @@ class TopSimplino(QMainWindow):
         """
         price_precision = self.api.exchange.markets[self.simplino.pair]['precision']['price']
         qty_precision = self.api.exchange.markets[self.simplino.pair]['precision']['amount']
-
-        bid_price = float(order_book['bids'][0][0])
-        ask_price = float(order_book['asks'][0][0])
-        # we assume that price equal mean between bids and ask price (dont need to call the api again)
-        current_price = (bid_price + ask_price) / 2
 
         self.ui.price_label.setText(str(round(current_price, price_precision)))
         self.ui.ask_price_label.setText(str(round(ask_price, price_precision)))
@@ -605,7 +607,7 @@ class TopSimplino(QMainWindow):
         :return:
         """
         if not self.running:
-            f = open('run.json') # TODO get rid of hardcode, can load any json file
+            f = open('run.json')  # TODO get rid of hardcode, can load any json file
             data = json.load(f)
 
             self.simplino = Simplino(data['pair'])
@@ -627,39 +629,36 @@ class TopSimplino(QMainWindow):
             self.simplino.sell_order_id = data['sell_order_id']
             self.simplino.start_price = data['start_price']
             self.simplino.ready = data['ready']
-            
+
             buy_filled, buy_order_info = self.api.order_isfilled(self.simplino.pair,
-                                                                     self.simplino.buy_order_id)
+                                                                 self.simplino.buy_order_id)
             print(buy_filled)
-            
+
             if buy_filled:
                 buy_price = self.simplino.buy_prices[self.simplino.nb_possible_sell]
                 buy_qty = self.simplino.buy_qtys[self.simplino.nb_possible_sell]
                 success, self.simplino.buy_order_id = self.api.create_limit_order(self.simplino.pair,
-                                                                                      "Buy",
-                                                                                      buy_price,
-                                                                                      buy_qty)
+                                                                                  "Buy",
+                                                                                  buy_price,
+                                                                                  buy_qty)
                 print("Buy Resent")
-            
+
             sell_filled, sell_order_info = self.api.order_isfilled(self.simplino.pair,
-                                                                     self.simplino.sell_order_id)
+                                                                   self.simplino.sell_order_id)
             if sell_filled:
                 sell_price = self.simplino.sell_prices[self.simplino.nb_possible_sell - 1]
                 sell_qty = self.simplino.buy_qty / self.simplino.nb_possible_sell
                 success, self.simplino.sell_order_id = self.api.create_limit_order(self.simplino.pair,
-                                                                                      "Sell",
-                                                                                      sell_price,
-                                                                                      sell_qty)
+                                                                                   "Sell",
+                                                                                   sell_price,
+                                                                                   sell_qty)
                 print("Sell Resent")
-            
+
             self.create_table()
             self.set_pair_label()
             logger.info('last run loaded !')
         else:
             logger.error('App is currently running')
-
-
-
 
 
 if __name__ == "__main__":
