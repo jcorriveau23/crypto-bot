@@ -456,24 +456,7 @@ class TopSimplino(QMainWindow):
             self.ui.tableWidget.item(possible_sell + 1, 1).setBackground(green)
             self.ui.tableWidget.item(possible_sell, 4).setBackground(red)
 
-    def update_simplino_persistent_storage(self):
-        """
-        Each time a buy or sell order is filled in a simplino run, this functions is called for persistant storage
-        The simplino data is stored in a file called "run.json"
 
-        :return:
-        """
-        data = {'pair': self.simplino.pair, 'buy_asset': self.simplino.buy_asset,
-                'sell_asset': self.simplino.sell_asset, 'buy_qtys': self.simplino.buy_qtys,
-                'buy_prices': self.simplino.buy_prices, 'sell_prices': self.simplino.sell_prices,
-                'nb_buy_depth': self.simplino.nb_buy_depth, 'nb_sells': self.simplino.nb_sells,
-                'nb_buys': self.simplino.nb_buys, 'nb_possible_sell': self.simplino.nb_possible_sell,
-                'buy_qty': self.simplino.buy_qty, 'invested': self.simplino.invested,
-                'buy_order_id': self.simplino.buy_order_id, 'sell_order_id': self.simplino.sell_order_id,
-                'start_price': self.simplino.start_price, 'ready': self.simplino.ready}
-
-        with open('run.json', 'w') as f:
-            json.dump(data, f)
 
     def btn_load_simplino_persistent_storage(self):
         """
@@ -673,6 +656,25 @@ class MainThread(QThread):
                 self.simplino.sell_order_id = 0  # NULL order ID so don't get fill checked
 
         self.update_simplino_persistent_storage()  # store the information of the current run
+
+    def update_simplino_persistent_storage(self):
+        """
+        Each time a buy or sell order is filled in a simplino run, this functions is called for persistant storage
+        The simplino data is stored in a file called "run.json"
+
+        :return:
+        """
+        data = {'pair': self.simplino.pair, 'buy_asset': self.simplino.buy_asset,
+                'sell_asset': self.simplino.sell_asset, 'buy_qtys': self.simplino.buy_qtys,
+                'buy_prices': self.simplino.buy_prices, 'sell_prices': self.simplino.sell_prices,
+                'nb_buy_depth': self.simplino.nb_buy_depth, 'nb_sells': self.simplino.nb_sells,
+                'nb_buys': self.simplino.nb_buys, 'nb_possible_sell': self.simplino.nb_possible_sell,
+                'buy_qty': self.simplino.buy_qty, 'invested': self.simplino.invested,
+                'buy_order_id': self.simplino.buy_order_id, 'sell_order_id': self.simplino.sell_order_id,
+                'start_price': self.simplino.start_price, 'ready': self.simplino.ready}
+
+        with open('run.json', 'w') as f:
+            json.dump(data, f)
 
 
 if __name__ == "__main__":
