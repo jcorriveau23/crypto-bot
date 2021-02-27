@@ -1,5 +1,6 @@
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QMdiArea, QMainWindow, QGridLayout, QVBoxLayout, QTabWidget, QApplication, QTableWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem
+from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
 from PyQt5 import QtWidgets
 import logging
 import threading
@@ -123,13 +124,17 @@ class TopSimplino(QMainWindow):
                     self.ui.start_time_label.setText(str(time.time()))
 
                     self.running = True
-                    threading.stack_size(0x2000000)
 
-                    self.thread_simplino = threading.Thread(target=self.main_simplino)
+                    self.thread_simplino = MainThread(self.api, self.simplino)
+                    self.thread_simplino.start()
+                    self.thread_simplino.update_visual_signal.connect(self.update_visual)
+
+                    # threading.stack_size(0x2000000)
+                    # self.thread_simplino = threading.Thread(target=self.main_simplino)
+                    # self.thread_simplino.start()
 
                     self.ui.simplino_parameters_group.setEnabled(False)
                     logger.info("Starting thread for simplino")
-                    self.thread_simplino.start()
 
                     return True
 
@@ -152,139 +157,12 @@ class TopSimplino(QMainWindow):
         :return:
         """
         if self.running:
-            self.thread_simplino_kill = True
-            self.thread_simplino.join()
-            self.thread_simplino_kill = False
+            self.thread_simplino.stop()
             self.running = False
             logger.debug("thread KILLED")
             self.ui.simplino_parameters_group.setEnabled(True)
         else:
             logger.info("Simplino is not running")
-
-    def main_simplino(self):
-        """
-        main loop of the simplino strategy. This loop is run in its own thread
-
-        :return:
-        """
-        while True:
-            if self.thread_simplino_kill:
-                return
-
-            success, order_book = self.api.get_order_book(self.simplino.pair)
-
-            if success:
-
-                buy_filled, buy_order_info = self.api.order_isfilled(self.simplino.pair,
-                                                                     self.simplino.buy_order_id)
-                if self.simplino.sell_order_id is not 0:
-                    sell_filled, sell_order_info = self.api.order_isfilled(self.simplino.pair,
-                                                                           self.simplino.sell_order_id)
-                else:
-                    sell_filled = False
-                    sell_order_info = None
-
-                if buy_filled:
-                    self.buy_order_filled(buy_order_info)
-                elif sell_filled:
-                    self.sell_order_filled(sell_order_info)
-
-                bid_price = float(order_book['bids'][0][0])
-                ask_price = float(order_book['asks'][0][0])
-                # we assume that price equal mean between bids and ask price (dont need to call the api again)
-                current_price = (bid_price + ask_price) / 2
-                self.update_visual(bid_price, ask_price, current_price, buy_filled, sell_filled, buy_order_info,
-                                   sell_order_info)
-
-            time.sleep(2)  # exchange polling rate
-
-    def buy_order_filled(self, order_info):
-        """
-        call when a buy order is filled, cancel current sell order and resend a buy + sell order depending on
-        the context
-
-        :param order_info: JSON from api that contain the filled order info
-        :return:
-        """
-        self.simplino.nb_buys += 1
-        qty = float(order_info["info"]["executedQty"])
-        price = float(order_info["info"]["price"])
-        self.simplino.buy_qty += qty
-        self.simplino.nb_possible_sell = self.simplino.nb_buys - self.simplino.nb_sells
-
-        fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
-
-        self.simplino.invested -= (1 + (fee_rate * MAKER_REFERRAL_DISCOUNT)) * qty * price
-
-        if self.simplino.nb_possible_sell > 1:  # a sell order is open?
-            self.api.cancel_order(self.simplino.sell_order_id, self.simplino.pair)
-        else:
-            logger.info("no active sell order")
-
-        if self.simplino.nb_possible_sell < self.simplino.nb_buy_depth:
-            buy_price = self.simplino.buy_prices[self.simplino.nb_possible_sell]
-            buy_qty = self.simplino.buy_qtys[self.simplino.nb_possible_sell]
-
-            success, self.simplino.buy_order_id = self.api.create_limit_order(self.simplino.pair,
-                                                                              "Buy",
-                                                                              buy_price,
-                                                                              buy_qty)
-            # TODO use the success to retrigger another try if not success
-        else:
-            logger.info("Buy depth reached cant buy more!")
-
-        # Always can sell after a buy order is filled
-        sell_price = self.simplino.sell_prices[self.simplino.nb_possible_sell - 1]
-        sell_qty = self.simplino.buy_qty / self.simplino.nb_possible_sell
-
-        success, self.simplino.sell_order_id = self.api.create_limit_order(self.simplino.pair,
-                                                                           "Sell",
-                                                                           sell_price,
-                                                                           sell_qty)
-        # TODO use the success to retrigger another try if not success
-
-        self.update_simplino_persistent_storage()  # store the information of the current run
-
-    def sell_order_filled(self, order_info):
-        """
-        call when a sell order is filled, cancel current buy order and resend buy + sell order depending on the context
-
-        :param order_info: JSON from api that contain the filled order info
-        :return:
-        """
-        self.simplino.nb_sells += 1
-        qty = float(order_info["info"]["executedQty"])
-        price = float(order_info["info"]["price"])
-        self.simplino.buy_qty -= qty
-
-        fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
-
-        self.simplino.invested += (1 - (fee_rate * MAKER_REFERRAL_DISCOUNT)) * qty * price
-
-        if self.api.cancel_order(self.simplino.buy_order_id, self.simplino.pair):
-            self.simplino.nb_possible_sell = self.simplino.nb_buys - self.simplino.nb_sells
-
-            buy_price = self.simplino.buy_prices[self.simplino.nb_possible_sell]
-            buy_qty = self.simplino.buy_qtys[self.simplino.nb_possible_sell]
-
-            success, self.simplino.buy_order_id = self.api.create_limit_order(self.simplino.pair,
-                                                                              "Buy",
-                                                                              buy_price,
-                                                                              buy_qty)
-            # TODO use the success to retrigger another try if not success
-            if self.simplino.nb_possible_sell > 0:
-                sell_price = self.simplino.sell_prices[self.simplino.nb_possible_sell - 1]
-                sell_qty = self.simplino.buy_qty / self.simplino.nb_possible_sell
-
-                success, self.simplino.sell_order_id = self.api.create_limit_order(self.simplino.pair,
-                                                                                   "Sell",
-                                                                                   sell_price,
-                                                                                   sell_qty)
-                # TODO use the success to retrigger another try if not success
-            else:
-                self.simplino.sell_order_id = 0  # NULL order ID so don't get fill checked
-
-        self.update_simplino_persistent_storage()  # store the information of the current run
 
     def create_table(self):
         """
@@ -659,6 +537,142 @@ class TopSimplino(QMainWindow):
             logger.info('last run loaded !')
         else:
             logger.error('App is currently running')
+
+
+class MainThread(QThread):
+    update_visual_signal = pyqtSignal(float, float, float, object, object, object, object)
+
+    def __init__(self, api, simplino):
+        super().__init__()
+        self.api = api
+        self.simplino = simplino
+
+        #self.main_simplino()
+
+    def run(self):
+        """
+        main loop of the simplino strategy. This loop is run in its own thread
+
+        :return:
+        """
+        while True:
+
+            success, order_book = self.api.get_order_book(self.simplino.pair)
+
+            if success:
+
+                buy_filled, buy_order_info = self.api.order_isfilled(self.simplino.pair,
+                                                                     self.simplino.buy_order_id)
+                if self.simplino.sell_order_id is not 0:
+                    sell_filled, sell_order_info = self.api.order_isfilled(self.simplino.pair,
+                                                                           self.simplino.sell_order_id)
+                else:
+                    sell_filled = False
+                    sell_order_info = None
+
+                if buy_filled:
+                    self.buy_order_filled(buy_order_info)
+                elif sell_filled:
+                    self.sell_order_filled(sell_order_info)
+
+                bid_price = float(order_book['bids'][0][0])
+                ask_price = float(order_book['asks'][0][0])
+                # we assume that price equal mean between bids and ask price (dont need to call the api again)
+                current_price = (bid_price + ask_price) / 2
+
+                # TODO send by thread signal
+                self.update_visual_signal.emit(bid_price, ask_price, current_price, buy_filled, sell_filled,
+                                               buy_order_info, sell_order_info)
+
+            time.sleep(2)  # exchange polling rate
+
+    def buy_order_filled(self, order_info):
+        """
+        call when a buy order is filled, cancel current sell order and resend a buy + sell order depending on
+        the context
+
+        :param order_info: JSON from api that contain the filled order info
+        :return:
+        """
+        self.simplino.nb_buys += 1
+        qty = float(order_info["info"]["executedQty"])
+        price = float(order_info["info"]["price"])
+        self.simplino.buy_qty += qty
+        self.simplino.nb_possible_sell = self.simplino.nb_buys - self.simplino.nb_sells
+
+        fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
+
+        self.simplino.invested -= (1 + (fee_rate * MAKER_REFERRAL_DISCOUNT)) * qty * price
+
+        if self.simplino.nb_possible_sell > 1:  # a sell order is open?
+            self.api.cancel_order(self.simplino.sell_order_id, self.simplino.pair)
+        else:
+            logger.info("no active sell order")
+
+        if self.simplino.nb_possible_sell < self.simplino.nb_buy_depth:
+            buy_price = self.simplino.buy_prices[self.simplino.nb_possible_sell]
+            buy_qty = self.simplino.buy_qtys[self.simplino.nb_possible_sell]
+
+            success, self.simplino.buy_order_id = self.api.create_limit_order(self.simplino.pair,
+                                                                              "Buy",
+                                                                              buy_price,
+                                                                              buy_qty)
+            # TODO use the success to retrigger another try if not success
+        else:
+            logger.info("Buy depth reached cant buy more!")
+
+        # Always can sell after a buy order is filled
+        sell_price = self.simplino.sell_prices[self.simplino.nb_possible_sell - 1]
+        sell_qty = self.simplino.buy_qty / self.simplino.nb_possible_sell
+
+        success, self.simplino.sell_order_id = self.api.create_limit_order(self.simplino.pair,
+                                                                           "Sell",
+                                                                           sell_price,
+                                                                           sell_qty)
+        # TODO use the success to retrigger another try if not success
+
+        self.update_simplino_persistent_storage()  # store the information of the current run
+
+    def sell_order_filled(self, order_info):
+        """
+        call when a sell order is filled, cancel current buy order and resend buy + sell order depending on the context
+
+        :param order_info: JSON from api that contain the filled order info
+        :return:
+        """
+        self.simplino.nb_sells += 1
+        qty = float(order_info["info"]["executedQty"])
+        price = float(order_info["info"]["price"])
+        self.simplino.buy_qty -= qty
+
+        fee_rate = self.api.exchange.markets[self.simplino.pair]['maker']
+
+        self.simplino.invested += (1 - (fee_rate * MAKER_REFERRAL_DISCOUNT)) * qty * price
+
+        if self.api.cancel_order(self.simplino.buy_order_id, self.simplino.pair):
+            self.simplino.nb_possible_sell = self.simplino.nb_buys - self.simplino.nb_sells
+
+            buy_price = self.simplino.buy_prices[self.simplino.nb_possible_sell]
+            buy_qty = self.simplino.buy_qtys[self.simplino.nb_possible_sell]
+
+            success, self.simplino.buy_order_id = self.api.create_limit_order(self.simplino.pair,
+                                                                              "Buy",
+                                                                              buy_price,
+                                                                              buy_qty)
+            # TODO use the success to retrigger another try if not success
+            if self.simplino.nb_possible_sell > 0:
+                sell_price = self.simplino.sell_prices[self.simplino.nb_possible_sell - 1]
+                sell_qty = self.simplino.buy_qty / self.simplino.nb_possible_sell
+
+                success, self.simplino.sell_order_id = self.api.create_limit_order(self.simplino.pair,
+                                                                                   "Sell",
+                                                                                   sell_price,
+                                                                                   sell_qty)
+                # TODO use the success to retrigger another try if not success
+            else:
+                self.simplino.sell_order_id = 0  # NULL order ID so don't get fill checked
+
+        self.update_simplino_persistent_storage()  # store the information of the current run
 
 
 if __name__ == "__main__":
