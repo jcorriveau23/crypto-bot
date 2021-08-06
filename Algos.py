@@ -3,6 +3,7 @@ class Simplino():
     def __init__(self, pair):
         self.pair = pair
 
+        pair = pair.replace("-", "/")
         trading_asset = pair.split('/')
         self.buy_asset = trading_asset[0]
         self.sell_asset = trading_asset[1]

@@ -7,10 +7,6 @@ import threading
 import time
 import json
 
-import faulthandler
-
-faulthandler.enable()
-
 from api import API
 from Algos import Simplino
 
@@ -39,13 +35,12 @@ class TopSimplino(QMainWindow):
         self.ui.setupUi(self)
 
         self.available_exchange()
-        self.api = API(self.ui.exchange_comboBox.currentText())  # Default api is first of drop box
 
         self.ui.calculate_button.clicked.connect(lambda: self.btn_calculate_simplino())
         self.ui.start_button.clicked.connect(lambda: self.btn_start())
         self.ui.stop_button.clicked.connect(lambda: self.btn_stop())
         self.ui.load_run_button.clicked.connect(lambda: self.btn_load_simplino_persistent_storage())
-        self.ui.exchange_comboBox.currentTextChanged.connect(lambda: self.update_available_pair(self.api))
+        self.ui.exchange_comboBox.currentTextChanged.connect(lambda: self.update_available_pair())
 
         self.simplino = None
 
@@ -53,7 +48,7 @@ class TopSimplino(QMainWindow):
         self.thread_simplino_kill = False
         self.running = False
 
-        self.update_available_pair(self.api)
+        self.update_available_pair()
 
     def btn_calculate_simplino(self):
         """
@@ -62,13 +57,14 @@ class TopSimplino(QMainWindow):
         """
         if not self.running:
             pair = self.ui.pair_comboBox.currentText()
-
             success_text, trading_qty, start_price, nb_buy, drop_percent, more_percent = self.text_input_handler()
 
             if success_text:
                 self.simplino = Simplino(pair)
 
                 success_balance, balance = self.api.get_asset_balance(self.simplino.sell_asset)
+                print(success_balance)
+                print(balance)
 
                 if success_balance:
 
@@ -86,17 +82,17 @@ class TopSimplino(QMainWindow):
                         return True
 
                     else:
-                        logger.error("not enough balance => Trading qty: {}, balance: {}".format(trading_qty, balance))
+                        print("not enough balance => Trading qty: {}, balance: {}".format(trading_qty, balance))
                         return False
 
                 else:
-                    logger.error("Could not get balance info")
+                    print("Could not get balance info")
                     return False
             else:
-                logger.error("text input check not valid")
+                print("text input check not valid")
                 return False
         else:
-            logger.info("can't calculate when Simplino is running")
+            print("can't calculate when Simplino is running")
             return False
 
     def btn_start(self):
@@ -115,6 +111,7 @@ class TopSimplino(QMainWindow):
                                                                                       self.simplino.buy_qtys[0])
                     self.ui.tableWidget.item(1, 0).setBackground(green)
                     self.ui.tableWidget.item(1, 1).setBackground(green)
+
                 else:  # restart the previous run
                     logger.info("Restart the previous run")
                     success = True
@@ -128,10 +125,6 @@ class TopSimplino(QMainWindow):
                     self.thread_simplino = MainThread(self.api, self.simplino)
                     self.thread_simplino.start()
                     self.thread_simplino.update_visual_signal.connect(self.update_visual)
-
-                    # threading.stack_size(0x2000000)
-                    # self.thread_simplino = threading.Thread(target=self.main_simplino)
-                    # self.thread_simplino.start()
 
                     self.ui.simplino_parameters_group.setEnabled(False)
                     logger.info("Starting thread for simplino")
@@ -252,64 +245,64 @@ class TopSimplino(QMainWindow):
         drop_percent = self.ui.drop_poucent_text_input.text()
         more_percent = self.ui.percent_more_buy_label.text()
 
-        if trading_qty.isnumeric():
+        if self.is_number(trading_qty):
             trading_qty = float(trading_qty)
             if trading_qty > 0:
                 pass
             else:
-                logger.error("trading_qty: {}, is not a positive number".format(trading_qty))
+                print("trading_qty: {}, is not a positive number".format(trading_qty))
                 return False, None, None, None, None, None
         else:
-            logger.error("trading_qty: {}, input is not numeric".format(trading_qty))
+            print("trading_qty: {}, input is not numeric".format(trading_qty))
             return False, None, None, None, None, None
 
-        if start_price.isnumeric():
+        if self.is_number(start_price):
             start_price = float(start_price)
             if start_price > 0:
                 pass
             else:
-                logger.error("price: {}, is not a positive number".format(start_price))
+                print("price: {}, is not a positive number".format(start_price))
                 return False, None, None, None, None, None
         else:
-            logger.error("price: {}, input is not numeric".format(start_price))
+            print("price: {}, input is not numeric".format(start_price))
             return False, None, None, None, None, None
 
-        if nb_buy.isnumeric():
+        if self.is_number(nb_buy):
             nb_buy = int(nb_buy)
             if nb_buy > 0:
                 pass
             else:
-                logger.error("nb_buy: {}, is not a positive number".format(nb_buy))
+                print("nb_buy: {}, is not a positive number".format(nb_buy))
                 return False, None, None, None, None, None
         else:
-            logger.error("nb_buy: {}, input is not numeric".format(nb_buy))
+            print("nb_buy: {}, input is not numeric".format(nb_buy))
             return False, None, None, None, None, None
 
-        if drop_percent.isnumeric():
+        if self.is_number(drop_percent):
             drop_percent = float(drop_percent)
             if 0 < drop_percent < 100:
                 pass
             else:
-                logger.error("drop_percent: {}, is not a valid percentage".format(drop_percent))
+                print("drop_percent: {}, is not a valid percentage".format(drop_percent))
                 return False, None, None, None, None, None
         else:
-            logger.error("drop_percent: {}, is not numeric".format(drop_percent))
+            print("drop_percent: {}, is not numeric".format(drop_percent))
             return False, None, None, None, None, None
 
-        if more_percent.isnumeric():
+        if self.is_number(more_percent):
             more_percent = float(more_percent)
             if 0 < more_percent < 100:
                 pass
             else:
-                logger.error("more_percent: {}, is not a valid percentage".format(more_percent))
+                print("more_percent: {}, is not a valid percentage".format(more_percent))
                 return False, None, None, None, None, None
         else:
-            logger.error("drop_percent: {}, is not numeric".format(drop_percent))
+            print("drop_percent: {}, is not numeric".format(drop_percent))
             return False, None, None, None, None, None
 
         return True, trading_qty, start_price, nb_buy, drop_percent, more_percent
 
-    def update_available_pair(self, api):
+    def update_available_pair(self):
         """
         Call when app started, set tab title and combo box available pairs
 
@@ -317,8 +310,9 @@ class TopSimplino(QMainWindow):
         :return:
         """
         self.ui.pair_comboBox.clear()
+        self.api = API(self.ui.exchange_comboBox.currentText())  # Default api is first of drop box
 
-        for symbol in api.exchange.markets:
+        for symbol in self.api.exchange.markets:
             self.ui.pair_comboBox.addItem(symbol)
 
         self.ui.Order_filled_tab.setRowCount(1)
@@ -342,7 +336,10 @@ class TopSimplino(QMainWindow):
         Only available exchange is binance for now
         :return:
         """
+
         self.ui.exchange_comboBox.addItem("binance")
+        self.ui.exchange_comboBox.addItem("Loopring")
+
 
     def update_visual(self, bid_price, ask_price, current_price, buy_filled, sell_filled, buy_order, sell_order):
         """
@@ -359,6 +356,9 @@ class TopSimplino(QMainWindow):
         """
         price_precision = self.api.exchange.markets[self.simplino.pair]['precision']['price']
         qty_precision = self.api.exchange.markets[self.simplino.pair]['precision']['amount']
+        if qty_precision > 4:
+            qty_precision = 4
+
 
         self.ui.price_label.setText(str(round(current_price, price_precision)))
         self.ui.ask_price_label.setText(str(round(ask_price, price_precision)))
@@ -520,6 +520,13 @@ class TopSimplino(QMainWindow):
             logger.info('last run loaded !')
         else:
             logger.error('App is currently running')
+
+    def is_number(self, number):
+        try:
+            float(number)
+            return True
+        except ValueError:
+            return False
 
 
 class MainThread(QThread):

@@ -1,6 +1,7 @@
 import ccxt
 import logging
-
+from sdk.ethsnarks.eddsa import PoseidonEdDSA
+from sdk.loopring_v3_client import LoopringV3Client
 import Keys
 
 logger = logging.getLogger(__name__)
@@ -14,14 +15,21 @@ logger.addHandler(file_handler)
 class API:
     def __init__(self, ex):
         self.exchange_id = ex
-        exchange_class = getattr(ccxt, ex)
-        self.exchange = exchange_class({
-            'apiKey': Keys.api_key,
-            'secret': Keys.api_secret,
-            'timeout': 50000,
-            'enableRateLimit': True,
-        })
-        self.exchange.load_markets()
+        if ex != "Loopring":
+            exchange_class = getattr(ccxt, ex)
+
+            self.exchange = exchange_class({
+                'apiKey': Keys.api_key,
+                'secret': Keys.api_secret,
+                'timeout': 50000,
+                'enableRateLimit': True,
+            })
+            self.exchange.load_markets()
+
+        else:
+            self.exchange = LoopringV3Client()
+            self.exchange.connect(Keys.loopring_exported_account)
+            self.exchange.load_markets()
 
     def create_limit_order(self, pair, side, price, qty):
         """
@@ -64,7 +72,7 @@ class API:
                                                                                                      'orderId']))
                 return True, order_id['info']['orderId']
             except Exception as e:
-                logger.error('Buy Order could not be send! Exception: {}'.format(e))
+                logger.error('Buy Order could not be sent, exception: {}'.format(e))
                 return False, None
         else:
             return False, None
@@ -118,6 +126,7 @@ class API:
     def get_asset_balance(self, sell_asset):
         try:
             info = self.exchange.fetch_balance()
+
             balances = info['info']['balances']
 
             for asset in balances:  # fetch the balance of the pairing asset. Selling side
