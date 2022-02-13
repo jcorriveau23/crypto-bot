@@ -1,0 +1,6 @@
+# Default ignored files
+.idea
+__pycache__
+Keys.py
+log_file.log
+run.json

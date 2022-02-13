@@ -1,0 +1,1 @@
+pyside2-uic simplino_widget.ui > ui_widget_simplino.py

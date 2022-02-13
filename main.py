@@ -166,6 +166,8 @@ class TopSimplino(QMainWindow):
         price_precision = self.api.exchange.markets[self.simplino.pair]['precision']['price']
         qty_precision = self.api.exchange.markets[self.simplino.pair]['precision']['amount']
 
+        print("Price: " + str(price_precision))
+
         self.ui.start_price_label.setText(str(round(self.simplino.start_price, price_precision)))
         self.ui.tableWidget.clear()
         self.ui.tableWidget.setRowCount(len(self.simplino.buy_prices) + 1)

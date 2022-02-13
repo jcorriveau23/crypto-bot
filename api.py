@@ -130,6 +130,7 @@ class API:
             balances = info['info']['balances']
 
             for asset in balances:  # fetch the balance of the pairing asset. Selling side
+                print(asset)
                 if asset['asset'] == sell_asset:
                     balance = float(asset['free'])
                     return True, balance
