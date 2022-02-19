@@ -1,6 +1,6 @@
 # Crypto-trading-bot
 
-Simple trading bot that support binance and loopring DEX exchange using ccxt and loopring api.
+Simple trading bot that support binance and loopring DEX exchange using ccxt and loopring sdk.
 
 ## Binance bot
 
@@ -25,7 +25,7 @@ pip install ccxt
 ## to modify the ui with QTdesigner
 
 1) open Qt designer
-2) go to file => open and chose **ui_main.py **
+2) go to file => open and chose **ui_main.py**
 3) modify the ui with the tool
 4) save it as the same name (erase the last one)
 5) in the project repo in command line, enter: **pyuic5 -o ui_main.py** main.ui to create the **ui_main.py**
