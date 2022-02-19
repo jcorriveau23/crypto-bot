@@ -1,10 +1,20 @@
-# BinanceBot
+# crypto-trading-bot
 
-Create in the root folder a Keys.py file with your binance api keys writing as:
+Simple trading bot that support binance and loopring DEX exchange using ccxt and loopring api.
+
+# Binance-bot
+
+Create in the root folder a Keys.py file with your binance api keys writin as:
 
 api_key = "your api public key"
 
 api_secret = "your api private key"
+
+# Loopring-bot
+
+Create in the root folder a Keys.py file with your loopring exported account info writin as:
+
+loopring_exported_account = {"loopring_exported_account_info"}
 
 # Libraries
 
