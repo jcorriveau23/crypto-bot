@@ -1,6 +1,6 @@
 # Crypto-trading-bot
 
-Simple trading bot that support binance and loopring DEX exchange using ccxt and loopring sdk.
+Simple trading bot that support binance and loopring DEX exchange using ccxt library and loopring sdk.
 
 ## Binance bot
 
