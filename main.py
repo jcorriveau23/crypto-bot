@@ -57,17 +57,17 @@ class TopSimplino(QMainWindow):
         """
         if not self.running:
             pair = self.ui.pair_comboBox.currentText()
+
+            # input parameters handler
             success_text, trading_qty, start_price, nb_buy, drop_percent, more_percent = self.text_input_handler()
 
             if success_text:
                 self.simplino = Simplino(pair)
 
+                # get account asset balance
                 success_balance, balance = self.api.get_asset_balance(self.simplino.sell_asset)
-                print(success_balance)
-                print(balance)
 
                 if success_balance:
-
                     if trading_qty < balance:
 
                         # create simplino context
@@ -82,7 +82,7 @@ class TopSimplino(QMainWindow):
                         return True
 
                     else:
-                        print("not enough balance => Trading qty: {}, balance: {}".format(trading_qty, balance))
+                        print(f"not enough balance => Trading qty: {trading_qty}, balance: {balance}")
                         return False
 
                 else:
@@ -103,14 +103,14 @@ class TopSimplino(QMainWindow):
         """
         if self.simplino.ready:  # if buy and sell price ready
             if not self.running:
-
                 if self.simplino.buy_order_id == 0:  # New run started
                     success, self.simplino.buy_order_id = self.api.create_limit_order(self.simplino.pair,
                                                                                       "Buy",
                                                                                       self.simplino.buy_prices[0],
                                                                                       self.simplino.buy_qtys[0])
-                    self.ui.tableWidget.item(1, 0).setBackground(green)
-                    self.ui.tableWidget.item(1, 1).setBackground(green)
+                    if success:
+                        self.ui.tableWidget.item(1, 0).setBackground(green)
+                        self.ui.tableWidget.item(1, 1).setBackground(green)
 
                 else:  # restart the previous run
                     logger.info("Restart the previous run")
@@ -118,10 +118,9 @@ class TopSimplino(QMainWindow):
 
                 if success:
                     logger.info("Simplino start")
-                    self.ui.start_time_label.setText(str(time.time()))
+                    self.ui.start_time_label.setText(str(time.time())) # TODO display the time in date-time short time format.
 
-                    self.running = True
-
+                    # Create and start the thread.
                     self.thread_simplino = MainThread(self.api, self.simplino)
                     self.thread_simplino.start()
                     self.thread_simplino.update_visual_signal.connect(self.update_visual)
@@ -129,6 +128,7 @@ class TopSimplino(QMainWindow):
                     self.ui.simplino_parameters_group.setEnabled(False)
                     logger.info("Starting thread for simplino")
 
+                    self.running = True
                     return True
 
                 else:
@@ -146,7 +146,6 @@ class TopSimplino(QMainWindow):
     def btn_stop(self):
         """
         kill the simplino thread strategy
-
         :return:
         """
         if self.running:
@@ -555,9 +554,11 @@ class MainThread(QThread):
 
                 buy_filled, buy_order_info = self.api.order_isfilled(self.simplino.pair,
                                                                      self.simplino.buy_order_id)
+
                 if self.simplino.sell_order_id is not 0:
                     sell_filled, sell_order_info = self.api.order_isfilled(self.simplino.pair,
                                                                            self.simplino.sell_order_id)
+
                 else:
                     sell_filled = False
                     sell_order_info = None

@@ -51,8 +51,7 @@ class API:
                                                                 )
 
                 logger.info('Buy Order Sent => QTY: {} ETH, PRICE: {} Pair: {} order ID: {}'.format(qty, price, pair,
-                                                                                                    order_id['info'][
-                                                                                                        'orderId']))
+                                                                                                     order_id['info']['orderId']))
                 return True, order_id['info']['orderId']
             except Exception as e:
                 logger.error('Buy Order could not be send! Exception: {}'.format(e))
@@ -68,8 +67,7 @@ class API:
                                                                  round(price, price_precision))
 
                 logger.info('Sell Order Sent => QTY: {}, PRICE: {} Pair: {} order ID: {}'.format(qty, price, pair,
-                                                                                                 order_id['info'][
-                                                                                                     'orderId']))
+                                                                                                 order_id['info']['orderId']))
                 return True, order_id['info']['orderId']
             except Exception as e:
                 logger.error('Buy Order could not be sent, exception: {}'.format(e))

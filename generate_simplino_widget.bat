@@ -1,1 +1,1 @@
-pyside2-uic simplino_widget.ui > ui_widget_simplino.py
+pyuic5 -o ui_main.py main.ui

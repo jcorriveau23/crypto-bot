@@ -366,7 +366,7 @@ class LoopringV3Client(RestClient):
         json_resp = response.json()
         return json_resp
 
-    def fetch_order(self, orderHash, symbol=None):
+    def fetch_order(self, id, symbol=None):
         """"""
         data = {
             "security": Security.API_KEY
@@ -374,7 +374,7 @@ class LoopringV3Client(RestClient):
 
         params = {
             "accountId": self.accountId,
-            "orderHash": orderHash
+            "orderHash": id
         }
 
         response = self.request(
@@ -395,10 +395,11 @@ class LoopringV3Client(RestClient):
                              "side": json_resp["side"],
                              "price": json_resp["price"],
                              "executedQty": str(float(json_resp["volumes"]["baseFilled"])/10**self.tokenDecimals[self.tokenIds[base_token]]),
-                             "origQty": str(float(json_resp["volumes"]["baseAmount"])/10**self.tokenDecimals[self.tokenIds[base_token]])
+                             "origQty": str(float(json_resp["volumes"]["baseAmount"])/10**self.tokenDecimals[self.tokenIds[base_token]]),
+                             "orderId": json_resp["hash"]
                              }
 
-        if json_resp["status"] == "processed" and json_resp["volumes"]["baseFilled"] == json_resp["volumes"]["baseAmount"]:
+        if json_resp["status"] == "processed": # and json_resp["volumes"]["baseFilled"] == json_resp["volumes"]["baseAmount"]
             json_resp["info"]["status"] = "FILLED"
 
         return json_resp
@@ -511,8 +512,8 @@ class LoopringV3Client(RestClient):
         return json_resp
 
     def send_order(self, base_token, quote_token, buy, price, volume, ammPoolAddress = None):
-        if self.orderId[self.tokenIds[base_token]] == 0:
-            self.get_storageId(self.tokenIds[base_token])
+        if self.orderId[self.tokenIds[quote_token]] == 0:
+            self.get_storageId(self.tokenIds[quote_token])
 
         order = self._create_order(base_token, quote_token, buy, price, volume, ammPoolAddress)
         data = {"security": Security.API_KEY}
